@@ -11,7 +11,8 @@ export default function SearchBooksPage() {
   useEffect(() => {
     if (query) {
       const fetchBooks = async () => {
-        const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`)
+        const key = process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY
+        const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${key}`)
         const data = await res.json()
         setResults(data.items || [])
       }
