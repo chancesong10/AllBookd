@@ -11,9 +11,8 @@ function BookSearch() {
   useEffect(() => {
     if (!query) return
     const fetchBooks = async () => {
-      const key = process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY
       const res = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${key}`
+        `/api/books?q=${encodeURIComponent(query)}` // Adjusted to use the Next.js API route
       )
       const data = await res.json()
       setResults(data.items || [])
