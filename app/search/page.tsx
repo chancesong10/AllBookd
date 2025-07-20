@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 
-export default function BookSearch() {
+function BookSearch() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   const [results, setResults] = useState<any[]>([])
@@ -46,7 +46,7 @@ export default function BookSearch() {
   )
 }
 
-export function Searchbar() {
+export default function Searchbar() {
     return (
       <Suspense>
         <BookSearch />
