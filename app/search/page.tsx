@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 export default function BookSearch() {
   const searchParams = useSearchParams()
@@ -44,4 +44,12 @@ export default function BookSearch() {
       </div>
     </div>
   )
+}
+
+export function Searchbar() {
+    return (
+      <Suspense>
+        <BookSearch />
+      </Suspense>
+    )
 }
