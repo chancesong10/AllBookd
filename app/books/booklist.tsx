@@ -8,8 +8,7 @@ export default async function books_data() {
     // Example: fetch data
   const { data, error } = await supabase
     .from('books')
-    .select('*')
-    .limit(5);
+    .select('*');
 
   return (
     <div className="p-4 text-white">
