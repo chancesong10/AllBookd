@@ -32,7 +32,7 @@ function BookSearch() {
               <p className="text-sm">{info.authors?.[0]}</p>
               {info.imageLinks?.thumbnail && (
                 <img
-                  src={info.imageLinks.thumbnail}
+                  src={`https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api`}
                   alt={info.title}
                   className="mt-2 w-full max-w-xs"
                 />
