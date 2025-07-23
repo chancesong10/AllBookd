@@ -2,7 +2,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 interface VolumeInfo {
@@ -22,7 +22,7 @@ interface BookItem {
   volumeInfo: VolumeInfo
 }
 
-export default function SearchPage() {
+function SearchPage() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   const [results, setResults] = useState<BookItem[]>([])
@@ -113,4 +113,12 @@ export default function SearchPage() {
     )}
   </div>
   )
+}
+
+export default function BookSearch() {
+    return (
+    <Suspense>
+        <SearchPage />
+    </Suspense>
+    )
 }
