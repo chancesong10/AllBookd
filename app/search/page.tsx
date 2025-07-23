@@ -71,19 +71,16 @@ export default function SearchPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
           {results.map((book) => {
             const info = book.volumeInfo
-            const src = `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api`
+            const book_url = `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api`
 
             return (
-              <div
-                key={book.id || info.title}
-                className="bg-gray-900 rounded-lg shadow-lg overflow-hidden flex flex-col"
-              >
+              <div key={book.id} className="bg-gray-900 p-2 rounded shadow flex flex-col h-full">
                 {/* Image on top */}
-                <div className="relative w-full" style={{ paddingTop: '150%' }}>
+                <div className="mt-2 w-full h-60">
                   <img
-                    src={src}
+                    src={book_url}
                     alt={info.title}
-                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    className="w-full h-full object-contain rounded mb-2 shadow-md hover:shadow-lg transition-shadow duration-200 transform hover:scale-105"
                   />
                 </div>
 
