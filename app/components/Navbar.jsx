@@ -24,6 +24,11 @@ export default function Navbar() {
     return (
         <nav>
             <div className="fixed bg-gray-900 p-4 w-full flex items-center">
+                <div>
+                    <Link href="/" className="ml-4 text-white text-2xl font-bold">
+                        AllBookd
+                    </Link>
+                </div>
                 <div className="flex-1 flex justify-center ">
                     <ul className="flex space-x-4">
                         {Links.map((link) => (
