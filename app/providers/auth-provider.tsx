@@ -8,8 +8,8 @@ interface AuthContextType {
   user: User | null
   username: string | null
   isLoading: boolean
-  signUp: (email: string, password: string, username: string) => Promise<void>
-  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, username: string) => Promise<User | null>
+  signIn: (email: string, password: string) => Promise<User | null>
   signOut: () => Promise<boolean>
 }
 
@@ -17,8 +17,8 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   username: null,
   isLoading: true,
-  signUp: async () => {},
-  signIn: async () => {},
+  signUp: async () => null,
+  signIn: async () => null,
   signOut: async () => false
 })
 
@@ -37,66 +37,128 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!error && data) setUsername(data.username)
   }
 
-const signUp = async (email: string, password: string, username: string) => {
+const signUp = async (email: string, password: string, username: string): Promise<User | null> => {
   setIsLoading(true);
   try {
-    // 1. First check if username exists
-    const { count } = await supabase
+    // 1. Normalize inputs
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedUsername = username.trim();
+
+    // 2. Check username availability
+    const { count, error: countError } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('username', username);
+      .eq('username', trimmedUsername);
 
-    if (count && count > 0) {
-      throw new Error('Username already taken');
-    }
+    if (countError) throw countError;
+    if (count) throw new Error('Username already taken');
 
-    // 2. Sign up with email/password
+    // 3. Create auth user (THIS MUST HAPPEN FIRST)
     const { data: { user }, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
+      email: normalizedEmail,
+      password: password.trim(),
       options: {
-        data: { username }
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { username: trimmedUsername } // Store username in auth metadata
       }
     });
 
-    if (authError) throw authError;
+    if (authError || !user) throw authError || new Error('User creation failed');
 
-    // 3. Create profile (simplified - no updated_at needed)
-    if (user) {
+    // 4. Create profile WITH RETRY LOGIC (in case of timing issues)
+    let retries = 3;
+    while (retries > 0) {
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: user.id,
-          username
-          // Don't need to manually set created_at or updated_at
-          // They'll be set automatically by the database
+          id: user.id, // CRITICAL: Must match auth user ID
+          email: normalizedEmail,
+          username: trimmedUsername
         });
 
-      if (profileError) throw profileError;
-      setUsername(username);
+      if (!profileError) break; // Success!
+      
+      retries--;
+      if (retries === 0) {
+        // Clean up auth user if profile creation fails
+        await supabase.auth.admin.deleteUser(user.id);
+        throw new Error('Failed to create profile after 3 attempts');
+      }
+      await new Promise(resolve => setTimeout(resolve, 300)); // Wait 300ms before retry
     }
-  } catch (error) {
+
+    return user;
+  } catch (error: unknown) {
     console.error('Signup error:', error);
-    throw error;
+    throw new Error(
+      error instanceof Error ? error.message : 'Signup failed'
+    );
   } finally {
     setIsLoading(false);
   }
 };
 
-  const signIn = async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+const signIn = async (email: string, password: string): Promise<User | null> => {
+  setIsLoading(true);
+  try {
+    // Normalize email and trim password
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
 
-      if (error) throw error
-      if (user) await fetchUserProfile(user.id)
-    } finally {
-      setIsLoading(false)
+    // Debug logging (remove in production)
+    console.log('Attempting login with:', {
+      email: normalizedEmail,
+      passwordLength: trimmedPassword.length
+    });
+
+    const { data: { user, session }, error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password: trimmedPassword
+    });
+
+    if (error || !user) {
+      // Enhanced error logging
+      console.error('Login failed:', {
+        error,
+        userExists: !!user,
+        emailConfirmed: user?.email_confirmed_at
+      });
+      throw error || new Error('Login failed');
     }
+
+    // Verify email confirmation
+    if (!user.email_confirmed_at) {
+      // Resend confirmation email if not verified
+      await supabase.auth.resend({
+        type: 'signup',
+        email: normalizedEmail
+      });
+      throw new Error('Email not verified - new verification sent');
+    }
+
+    // Check profile consistency
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('Profile missing:', profileError);
+      await supabase.auth.signOut();
+      throw new Error('User profile missing - please contact support');
+    }
+
+    setUser(user);
+    setUsername(profile.username);
+    return user;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  } finally {
+    setIsLoading(false);
   }
+};
 
   const signOut = async (): Promise<boolean> => {
     try {

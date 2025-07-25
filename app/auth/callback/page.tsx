@@ -5,16 +5,37 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
+
 export default function AuthCallbackPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        router.push('/')
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Ensure profile exists
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', session.user.id)
+            .single();
+
+          if (!profile) {
+            await supabase.from('profiles').insert({
+              id: session.user.id,
+              username: session.user.user_metadata?.username || 'user_' + Math.random().toString(36).substring(2, 8),
+              email: session.user.email
+            });
+          }
+
+          router.push('/');
+          router.refresh();
+        }
       }
-    })
-  }, [router])
+    );
+
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -23,5 +44,5 @@ export default function AuthCallbackPage() {
         <p>You'll be redirected automatically</p>
       </div>
     </div>
-  )
+  );
 }

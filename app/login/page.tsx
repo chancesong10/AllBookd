@@ -11,17 +11,27 @@ export default function LoginPage() {
   const { signIn, isLoading } = useAuth()
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
 
-    try {
-      await signIn(email, password)
-      router.push('/')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+  try {
+    const user = await signIn(email, password);
+    if (user) {
+      router.push('/');
+      router.refresh();
+    }
+  } catch (err) {
+    const error = err as Error;
+    if (error.message.includes('verify your email')) {
+      setError('Please check your email for verification link');
+    } else if (error.message.includes('Invalid login credentials')) {
+      setError('Invalid email or password');
+    } else {
+      setError('Login failed: ' + error.message);
     }
   }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">

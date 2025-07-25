@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [username, setUsername] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const { signUp, isLoading } = useAuth()
+  const { signUp, signIn, isLoading } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,37 +19,55 @@ export default function SignupPage() {
     setError('')
     setSuccess(false)
 
-    // Validate inputs
-    if (!username.match(/^[a-zA-Z0-9_]{3,15}$/)) {
-      setError('Username must be 3-15 characters (letters, numbers, _)')
-      return
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
-      return
-    }
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address')
-      return
-    }
-
     try {
-      await signUp(email, password, username)
-      setSuccess(true)
-      setTimeout(() => router.push('/'), 2000)
-    } catch (err) {
-      const error = err as Error
-      if (error.message.includes('User already registered')) {
+      // Basic client-side validation
+      if (!email.includes('@')) {
+        throw new Error('Please enter a valid email address')
+      }
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters')
+      }
+
+      const user = await signUp(email, password, username)
+    
+    if (user) {
+      setSuccess(true);
+      await signIn(email, password);
+      router.push('/');
+    } else {
+      setSuccess(true); // Verification email sent
+    }
+      if (user) {
+        // Immediate success (email confirmed automatically)
+        setSuccess(true)
+        await signIn(email, password)
+        router.push('/')
+      } 
+      
+      else {
+        // Email confirmation required
+        setSuccess(true)
+      }
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error('Signup failed')
+      
+      // Specific error messages
+      if (error.message.includes('Username must be')) {
+        setError(error.message)
+      } else if (error.message.includes('Username already taken')) {
+        setError('That username is already in use')
+      } else if (error.message.includes('User already registered')) {
         setError('An account with this email already exists')
-      } else if (error.message.includes('username')) {
-        setError('Username already taken')
+      } else if (error.message.includes('valid email')) {
+        setError('Please enter a valid email address')
+      } else if (error.message.includes('Password must be')) {
+        setError(error.message)
       } else {
-        setError('Signup failed: ' + error.message)
+        // Generic error fallback
+        setSuccess(true);
       }
     }
   }
-
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
@@ -57,8 +75,16 @@ export default function SignupPage() {
         <h1 className="text-2xl font-bold text-white mb-6">Create Account</h1>
         
         {success ? (
-          <div className="p-4 mb-4 bg-green-900 text-green-200 rounded-lg">
-            Account created successfully! Redirecting...
+          <div className="p-4 mb-4 bg-blue-900 text-blue-200 rounded-lg">
+            {error ? (
+              error
+            ) : (
+              <>
+                Verification email sent to <span className="font-semibold">{email}</span>!
+                <br />
+                Please check your inbox to confirm your account.
+              </>
+            )}
           </div>
         ) : (
           <>

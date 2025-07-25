@@ -82,7 +82,7 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center gap-2">
                 {username && <span className="text-gray-300">@{username}</span>}
                 <span className="text-gray-400">|</span>
-                <span className="text-gray-300">{user.email}</span>
+
               </div>
               <button
                 onClick={handleLogout}
