@@ -2,7 +2,8 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
+const supabase = createClient()
 import { useAuth } from '@/app/providers/auth-provider'
 import { addToWishlist } from '@/lib/addtowishlist'
 import { BookItem } from '@/types/books'

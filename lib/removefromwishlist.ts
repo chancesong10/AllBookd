@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase'
-
+import { createClient } from '@/lib/supabase/client'
+const supabase = createClient()
+//remove from whislist
 /**
  * Remove a book from the wishlist.
  * @param id  The UUID of the wishlist row to delete.
