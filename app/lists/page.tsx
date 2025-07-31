@@ -4,13 +4,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { removeFromWishlist } from '@/lib/removefromwishlist'
-
-interface WishlistItem {
-  id: string
-  title: string
-  authors: string[] | string | null
-  thumbnail?: string | null
-}
+import { WishlistItem } from '@/types/books'
 
 export default function ListsPage() {
   const [items, setItems] = useState<WishlistItem[]>([])

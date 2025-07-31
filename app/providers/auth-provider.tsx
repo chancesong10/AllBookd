@@ -3,15 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
-
-interface AuthContextType {
-  user: User | null
-  username: string | null
-  isLoading: boolean
-  signUp: (email: string, password: string, username: string) => Promise<User | null>
-  signIn: (email: string, password: string) => Promise<User | null>
-  signOut: () => Promise<boolean>
-}
+import { AuthContextType } from '@/types/auth'
 
 const AuthContext = createContext<AuthContextType>({
   user: null,

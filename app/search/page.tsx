@@ -5,23 +5,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/app/providers/auth-provider'
 import { addToWishlist } from '@/lib/addtowishlist'
-
-interface VolumeInfo {
-  title: string
-  authors?: string[]
-  imageLinks?: {
-    thumbnail?: string
-    small?: string
-    medium?: string
-    large?: string
-    extraLarge?: string
-  }
-}
-
-interface BookItem {
-  id: string
-  volumeInfo: VolumeInfo
-}
+import { BookItem } from '@/types/books'
 
 function SearchPage() {
   const { user } = useAuth()
