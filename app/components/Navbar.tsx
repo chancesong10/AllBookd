@@ -27,7 +27,6 @@ export default function Navbar() {
     const success = await signOut()
     if (success) {
       router.push('/')
-      router.refresh()
     }
   }
 

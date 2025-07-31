@@ -19,7 +19,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     const user = await signIn(email, password);
     if (user) {
       router.push('/');
-      router.refresh();
     }
   } catch (err) {
     const error = err as Error;

@@ -168,30 +168,42 @@ const signIn = async (email: string, password: string): Promise<User | null> => 
     }
   }
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+useEffect(() => {
+  let mounted = true
+
+  const getSession = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!mounted) return
+      
       setUser(session?.user ?? null)
       if (session?.user) {
-        fetchUserProfile(session.user.id)
+        await fetchUserProfile(session.user.id)
       }
-      setIsLoading(false)
-    })
+    } catch (error) {
+      console.error('Session error:', error)
+    } finally {
+      if (mounted) setIsLoading(false)
+    }
+  }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          await fetchUserProfile(session.user.id)
-        } else {
-          setUsername(null)
-        }
-        setIsLoading(false)
+  getSession()
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        await fetchUserProfile(session.user.id)
       }
-    )
+    }
+  )
 
-    return () => subscription.unsubscribe()
-  }, [])
-
+  return () => {
+    mounted = false
+    subscription?.unsubscribe()
+  }
+}, [])
   return (
     <AuthContext.Provider value={{
       user,
