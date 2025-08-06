@@ -1,13 +1,19 @@
 'use client'
 
 import { BookItem } from '@/types/books';
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../providers/auth-provider';
 import { addToWishlist } from '@/lib/addtowishlist';
 
 export default function Genres() {
     const { user } = useAuth()
     const [books, setBooks] = useState<BookItem[]>([])
+
+    // Drag to scroll functionality
+    const scrollRef = useRef<HTMLDivElement>(null)
+    const isDragging = useRef(false)
+    const startX = useRef(0)
+    const scrollLeft = useRef(0)
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -18,12 +24,42 @@ export default function Genres() {
         fetchBooks()
     }, [])
 
+    const handleMouseDown = (e: React.MouseEvent) => {
+        isDragging.current = true
+        startX.current = e.pageX - (scrollRef.current?.offsetLeft || 0)
+        scrollLeft.current = scrollRef.current?.scrollLeft || 0
+    }
+
+    const hanndleMouseUp = () => {
+        isDragging.current = false
+    }
+
+    const handleMouseLeave = () => {
+        isDragging.current = false
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging.current || !scrollRef.current) return
+        e.preventDefault() // Prevent default text selection
+
+        const x = e.pageX - scrollRef.current.offsetLeft
+        const walk = (x - startX.current) * 1.5; // Adjust scroll speed
+        scrollRef.current.scrollLeft = scrollLeft.current - walk
+    }
+
     return (
         <div className="pt-24 p-4 bg-black text-white min-h-screen">
             <h1 className="text-2xl font-bold mb-4">Best Sellers</h1>
 
             {/* Horizontal scrollable book list */}
-            <div className="flex overflow-x-scroll space-x-4 no-scrollbar">
+            <div 
+                className="flex overflow-x-scroll space-x-4 no-scrollbar"
+                ref={scrollRef}
+                onMouseDown={handleMouseDown}
+                onMouseUp={hanndleMouseUp} 
+                onMouseLeave={handleMouseLeave}
+                onMouseMove={handleMouseMove}
+                >
                 {books.map((book) => {
                     const info = book.volumeInfo;
 
