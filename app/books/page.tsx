@@ -19,7 +19,7 @@ export default function Genres() {
     }, [])
 
     return (
-        <div className="pt-24 p-4">
+        <div className="pt-24 p-4 bg-black text-white min-h-screen">
             <h1 className="text-2xl font-bold mb-4">Best Sellers</h1>
 
             {/* Horizontal scrollable book list */}

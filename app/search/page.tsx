@@ -27,7 +27,7 @@ function SearchPage() {
   }, [query])
 
   return (
-    <div className="pt-24 p-6 text-white">
+    <div className="pt-24 p-6 text-white bg-black min-h-screen">
       {!query ? (
         <p>Type in the search box above and hit Enter to search.</p>
       ) : (
