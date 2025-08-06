@@ -53,7 +53,7 @@ export default function Genres() {
 
             {/* Horizontal scrollable book list */}
             <div 
-                className="flex overflow-x-scroll space-x-4 no-scrollbar"
+                className="flex overflow-x-scroll space-x-4 no-scrollbar select-none"
                 ref={scrollRef}
                 onMouseDown={handleMouseDown}
                 onMouseUp={hanndleMouseUp} 
@@ -73,6 +73,7 @@ export default function Genres() {
                                 <img
                                     src={`https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api`}
                                     alt={info.title}
+                                    draggable={false}
                                     className="w-full h-full object-contain rounded mb-2 shadow-md hover:shadow-lg transition-shadow duration-200 transform hover:scale-105"
                                 />
                             </div>
