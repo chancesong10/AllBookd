@@ -1,71 +1,65 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/providers/auth-provider'
 import Link from 'next/link'
 
 export default function SignupPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [username, setUsername] = useState('')
-  const [error, setError] = useState('')
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    username: ''
+  })
+  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const { signUp, signIn, isLoading } = useAuth()
+  const { signUp, isLoading } = useAuth()
   const router = useRouter()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setError(null)
     setSuccess(false)
 
     try {
-      // Basic client-side validation
-      if (!email.includes('@')) {
+      // Basic validation
+      if (!formData.email.includes('@')) {
         throw new Error('Please enter a valid email address')
       }
-      if (password.length < 6) {
+      if (formData.password.length < 6) {
         throw new Error('Password must be at least 6 characters')
       }
+      if (!/^[a-zA-Z0-9_]{3,15}$/.test(formData.username)) {
+        throw new Error('Username must be 3-15 characters (letters, numbers, underscores)')
+      }
 
-      const user = await signUp(email, password, username)
-    
-    if (user) {
-      setSuccess(true);
-      await signIn(email, password);
-      router.push('/');
-    } else {
-      setSuccess(true); // Verification email sent
-    }
-      if (user) {
-        // Immediate success (email confirmed automatically)
-        setSuccess(true)
-        await signIn(email, password)
-        router.push('/')
-      } 
+      // Simplified signup call
+      const result = await signUp(formData.email, formData.password, formData.username)
       
-      else {
-        // Email confirmation required
-        setSuccess(true)
-      }
+      // Handle successful signup
+      setSuccess(true)
+      router.push('/') // Redirect after successful signup
+      
     } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Signup failed')
+      console.error('Signup error:', err)
       
-      // Specific error messages
-      if (error.message.includes('Username must be')) {
-        setError(error.message)
-      } else if (error.message.includes('Username already taken')) {
-        setError('That username is already in use')
-      } else if (error.message.includes('User already registered')) {
-        setError('An account with this email already exists')
-      } else if (error.message.includes('valid email')) {
-        setError('Please enter a valid email address')
-      } else if (error.message.includes('Password must be')) {
-        setError(error.message)
-      } else {
-        // Generic error fallback
-        setSuccess(true);
+      let errorMessage = 'Signup failed. Please try again.'
+      if (err instanceof Error) {
+        if (err.message.includes('User already registered')) {
+          errorMessage = 'An account with this email already exists'
+        } else {
+          errorMessage = err.message
+        }
       }
+      
+      setError(errorMessage)
     }
   }
 
@@ -76,15 +70,7 @@ export default function SignupPage() {
         
         {success ? (
           <div className="p-4 mb-4 bg-blue-900 text-blue-200 rounded-lg">
-            {error ? (
-              error
-            ) : (
-              <>
-                Verification email sent to <span className="font-semibold">{email}</span>!
-                <br />
-                Please check your inbox to confirm your account.
-              </>
-            )}
+            Account created successfully! Redirecting...
           </div>
         ) : (
           <>
@@ -99,8 +85,9 @@ export default function SignupPage() {
                 <label className="block text-sm text-gray-300 mb-2">Username</label>
                 <input
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="3-15 characters (a-z, 0-9, _)"
                   required
@@ -114,8 +101,9 @@ export default function SignupPage() {
                 <label className="block text-sm text-gray-300 mb-2">Email</label>
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="your@email.com"
                   required
@@ -126,8 +114,9 @@ export default function SignupPage() {
                 <label className="block text-sm text-gray-300 mb-2">Password</label>
                 <input
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="At least 6 characters"
                   required

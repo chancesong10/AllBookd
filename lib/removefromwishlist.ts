@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
-const supabase = createClient()
+import { supabase } from '@/lib/supabase/client'
 //remove from whislist
 /**
  * Remove a book from the wishlist.
