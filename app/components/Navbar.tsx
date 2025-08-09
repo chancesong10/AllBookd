@@ -1,14 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/app/providers/auth-provider'
+import { supabase } from '@/lib/supabase'
+import { User } from '@supabase/supabase-js'
 
 export default function Navbar() {
   const [query, setQuery] = useState('')
+  const [user, setUser] = useState<User | null>(null)
+  const [username, setUsername] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  const { user, username, isLoading, signOut } = useAuth()
 
   const Links = [
     { href: "/", text: "Home" },
@@ -17,18 +20,65 @@ export default function Navbar() {
     { href: "/about", text: "About" },
   ]
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  // Search handler
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`)
     }
   }
 
+  // Logout handler
   const handleLogout = async () => {
-    const success = await signOut()
-    if (success) {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
       router.push('/')
+      router.refresh() // Refresh the page to clear any cached user data
+    } catch (error) {
+      console.error('Error logging out:', error)
     }
   }
+
+  useEffect(() => {
+    // Check current session
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session.user.id)
+          .single()
+        
+        setUsername(profile?.username || '')
+      }
+      
+      setIsLoading(false)
+    }
+
+    getSession()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            setUsername(profile?.username || '')
+          })
+      } else {
+        setUsername('')
+      }
+    })
+
+    return () => subscription?.unsubscribe()
+  }, [])
 
   return (
     <nav>
@@ -81,7 +131,6 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center gap-2">
                 {username && <span className="text-gray-300">@{username}</span>}
                 <span className="text-gray-400">|</span>
-
               </div>
               <button
                 onClick={handleLogout}

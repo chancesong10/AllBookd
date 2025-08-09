@@ -105,78 +105,97 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signOut = async (): Promise<boolean> => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      setUser(null);
-      setUsername(null);
-      persistAuthState(null);
-      return true;
-    } catch (error) {
-      console.error('Logout failed:', error);
-      return false;
+const signOut = async (): Promise<boolean> => {
+  setIsLoading(true);
+  try {
+    // 1. First clear Supabase auth session
+    const { error } = await supabase.auth.signOut();
+    
+    // 2. Then clear local state
+    setUser(null);
+    setUsername(null);
+    
+    // 3. Clean up storage carefully
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('sb:user');
+      // Clear specific Supabase tokens
+      localStorage.removeItem(`sb-${process.env.NEXT_PUBLIC_SUPABASE_URL}-auth-token`);
+      document.cookie = 'sb-auth-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     }
-  };
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Ensure state is cleared even if Supabase fails
+    setUser(null);
+    setUsername(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('sb:user');
+    }
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
 
-  useEffect(() => {
-    let mounted = true;
-    let subscription: any;
+    useEffect(() => {
+      let mounted = true;
+      let subscription: any;
 
-    const initializeAuth = async () => {
+      const initializeAuth = async () => {
 
-      if (typeof window !== 'undefined') {
-        const savedSession = localStorage.getItem('sb:user');
-        if (savedSession) {
-          try {
-            const { user, expiresAt } = JSON.parse(savedSession);
-            if (expiresAt > Date.now()) {
-              setUser(user);
-              await fetchUserProfile(user.id);
+        if (typeof window !== 'undefined') {
+          const savedSession = localStorage.getItem('sb:user');
+          if (savedSession) {
+            try {
+              const { user, expiresAt } = JSON.parse(savedSession);
+              if (expiresAt > Date.now()) {
+                setUser(user);
+                await fetchUserProfile(user.id);
+              }
+            } catch (e) {
+              localStorage.removeItem('sb:user');
             }
-          } catch (e) {
-            localStorage.removeItem('sb:user');
           }
         }
-      }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
 
-      if (session?.user) {
-        setUser(session.user);
-        await fetchUserProfile(session.user.id);
-        persistAuthState(session.user);
-      }
-
-
-      subscription = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (!mounted) return;
-          if (event === 'SIGNED_IN' && session?.user) {
-            setUser(session.user);
-            await fetchUserProfile(session.user.id);
-            persistAuthState(session.user);
-          } else if (event === 'SIGNED_OUT') {
-            setUser(null);
-            setUsername(null);
-            persistAuthState(null);
-          }
+        if (session?.user) {
+          setUser(session.user);
+          await fetchUserProfile(session.user.id);
+          persistAuthState(session.user);
         }
-      ).data.subscription;
 
-      setIsLoading(false);
-    };
 
-    initializeAuth();
+        subscription = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (!mounted) return;
+            if (event === 'SIGNED_IN' && session?.user) {
+              setUser(session.user);
+              await fetchUserProfile(session.user.id);
+              persistAuthState(session.user);
+            } else if (event === 'SIGNED_OUT') {
+              setUser(null);
+              setUsername(null);
+              persistAuthState(null);
+            }
+          }
+        ).data.subscription;
 
-    return () => {
-      mounted = false;
-      subscription?.unsubscribe();
-    };
-  }, []);
+        setIsLoading(false);
+      };
+
+      initializeAuth();
+
+      return () => {
+        mounted = false;
+        subscription?.unsubscribe();
+      };
+    }, []);
 
   return (
     <AuthContext.Provider value={{

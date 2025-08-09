@@ -1,33 +1,35 @@
 // app/lists/ListsContent.tsx
 'use client'
 
-import { useAuth } from '@/app/providers/auth-provider'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { WishlistItem } from '@/types/books'
+import { User } from '@supabase/supabase-js'
 
 export function ListsContent() {
-  // All hooks called unconditionally at the top
-  const { user, username, isLoading: isAuthLoading } = useAuth()
+  const [user, setUser] = useState<User | null>(null)
   const [items, setItems] = useState<WishlistItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user && !isAuthLoading) {
-      setError('Please log in to view your lists')
-      setIsLoading(false)
-      return
-    }
+    // Check current session
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+      
+      if (!session?.user) {
+        setError('Please log in to view your lists')
+        setIsLoading(false)
+        return
+      }
 
-    if (!user) return
-
-    const loadWishlist = async () => {
+      // Load wishlist if user is authenticated
       try {
         const { data, error: fetchError } = await supabase
           .from('wishlist')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
 
         if (fetchError) throw fetchError
@@ -39,10 +41,27 @@ export function ListsContent() {
       }
     }
 
-    loadWishlist()
-  }, [user, isAuthLoading])
+    getSession()
 
-  if (isAuthLoading || isLoading) {
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription?.unsubscribe()
+  }, [])
+
+  const handleRemove = async (id: string) => {
+    try {
+      await supabase.from('wishlist').delete().eq('id', id)
+      // Optimistically update UI instead of full reload
+      setItems(prevItems => prevItems.filter(item => item.id !== id))
+    } catch (error) {
+      alert('Failed to remove item')
+    }
+  }
+
+  if (isLoading) {
     return (
       <div className="bg-black text-white min-h-screen p-8">
         <h1 className="text-5xl font-bold mb-6">Your Wishlist</h1>
@@ -118,13 +137,4 @@ export function ListsContent() {
       )}
     </div>
   )
-}
-
-async function handleRemove(id: string) {
-  try {
-    await supabase.from('wishlist').delete().eq('id', id)
-    window.location.reload()
-  } catch (error) {
-    alert('Failed to remove item')
-  }
 }
