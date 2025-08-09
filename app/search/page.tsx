@@ -1,12 +1,26 @@
 'use client'
-
+//app/seazrch/page
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-const supabase = createClient()
+import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers/auth-provider'
-import { addToWishlist } from '@/lib/addtowishlist'
-import { BookItem } from '@/types/books'
+
+interface VolumeInfo {
+  title: string
+  authors?: string[]
+  imageLinks?: {
+    thumbnail?: string
+    small?: string
+    medium?: string
+    large?: string
+    extraLarge?: string
+  }
+}
+
+interface BookItem {
+  id: string
+  volumeInfo: VolumeInfo
+}
 
 function SearchPage() {
   const { user } = useAuth()
@@ -25,6 +39,35 @@ function SearchPage() {
       .then((r) => r.json())
       .then((json) => setResults(json.items || []))
   }, [query])
+
+  // Insert into Supabase wishlist
+  const addToWishlist = async (book: BookItem) => {
+    if (!user) {
+      alert('Please log in to add books to your wishlist.')
+      return
+    }
+
+    const info = book.volumeInfo
+    const thumbnail =
+      info.imageLinks?.thumbnail?.replace(/^http:\/\//, 'https://') || ''
+
+    const { error } = await supabase
+      .from('wishlist')
+      .insert([{
+        user_id: user.id,
+        book_id: book.id,
+        title: info.title,
+        authors: info.authors || [],
+        thumbnail
+      }])
+
+    if (error) {
+      console.error(error)
+      alert('Failed to add to wishlist')
+    } else {
+      alert(`✅ Added “${info.title}” to your wishlist`)
+    }
+  }
 
   return (
     <div className="pt-24 p-6 text-white bg-black min-h-screen">
@@ -68,7 +111,7 @@ function SearchPage() {
                     </div>
 
                     <button
-                      onClick={() => addToWishlist(book, user)}
+                      onClick={() => addToWishlist(book)}
                       className="mt-3 bg-green-600 hover:bg-green-700 text-white py-1.5 text-sm rounded w-full"
                     >
                       + Add to Wishlist
