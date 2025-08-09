@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
     const nytKey = process.env.NYT_BOOKS_API_KEY;
     const googleKey = process.env.GOOGLE_BOOKS_API_KEY;
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category') || 'hardcover-fiction';
 
     // Get NYT bestsellers
-    const nytRes = await fetch(`https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=${nytKey}`);
+    const nytRes = await fetch(`https://api.nytimes.com/svc/books/v3/lists/current/${category}.json?api-key=${nytKey}`);
     const nytData = await nytRes.json();
 
     const books = nytData.results.books || [];

@@ -21,3 +21,8 @@ export interface WishlistItem {
     authors: string[] | string | null
     thumbnail?: string | null
 }
+
+export interface BookRowProps {
+    title: string
+    books: BookItem[]
+}
