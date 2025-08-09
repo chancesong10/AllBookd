@@ -17,9 +17,9 @@ export default function Genres() {
 
     useEffect(() => {
         const fetchBooks = async () => {
-            const res = await fetch('/api/books?q=bestsellers&orderBy=relevance&maxResults=20')
+            const res = await fetch('/api/bestsellers')
             const data = await res.json()
-            setBooks(data.items || [])
+            setBooks(data.results.map((b: any) => b.google).filter(Boolean))
         }
         fetchBooks()
     }, [])
@@ -49,7 +49,7 @@ export default function Genres() {
 
     return (
         <div className="pt-24 p-4 bg-black text-white min-h-screen">
-            <h1 className="text-2xl font-bold mb-4">Best Sellers</h1>
+            <h1 className="text-2xl font-bold mb-4">Best Sellers in Fiction</h1>
 
             {/* Horizontal scrollable book list */}
             <div 
