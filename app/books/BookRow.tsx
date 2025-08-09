@@ -1,16 +1,32 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { BookRowProps } from '@/types/books'
-import { useAuth } from '../providers/auth-provider'
+import { supabase } from '@/lib/supabase'
+import { User } from '@supabase/supabase-js'
 import { addToWishlist } from '@/lib/addtowishlist'
 
 export default function BookRow({ title, books }: BookRowProps) {
-    const { user } = useAuth()
-
-    // Drag to scroll state inside component
+    const [user, setUser] = useState<User | null>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
     const isDragging = useRef(false)
     const startX = useRef(0)
     const scrollLeft = useRef(0)
+
+    useEffect(() => {
+        // Check current session
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            setUser(session?.user ?? null)
+        }
+
+        getSession()
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            setUser(session?.user ?? null)
+        })
+
+        return () => subscription?.unsubscribe()
+    }, [])
 
     const handleMouseDown = (e: React.MouseEvent) => {
         isDragging.current = true

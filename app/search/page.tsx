@@ -1,9 +1,8 @@
 'use client'
-//app/seazrch/page
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { useAuth } from '@/app/providers/auth-provider'
+import { User } from '@supabase/supabase-js'
 
 interface VolumeInfo {
   title: string
@@ -23,10 +22,26 @@ interface BookItem {
 }
 
 function SearchPage() {
-  const { user } = useAuth()
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   const [results, setResults] = useState<BookItem[]>([])
+  const [user, setUser] = useState<User | null>(null)
+
+  // Get current user session
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+    }
+
+    getSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription?.unsubscribe()
+  }, [])
 
   // Fetch books whenever query changes
   useEffect(() => {
@@ -65,7 +80,7 @@ function SearchPage() {
       console.error(error)
       alert('Failed to add to wishlist')
     } else {
-      alert(`✅ Added “${info.title}” to your wishlist`)
+      alert(`✅ Added "${info.title}" to your wishlist`)
     }
   }
 
@@ -76,7 +91,7 @@ function SearchPage() {
       ) : (
         <>
           <h1 className="text-2xl font-bold mb-4">
-            Results for “{query}”:
+            Results for "{query}":
           </h1>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {results.map((book) => {

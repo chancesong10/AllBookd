@@ -1,4 +1,3 @@
-// app/signup/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -19,31 +18,30 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      // 1. Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            username // Store username in user metadata
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
       })
 
       if (authError) throw authError
 
-      // 2. If successful, add to profiles table
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            username,
-            email
-          })
-
-        if (profileError) throw profileError
-
-        // Redirect after successful signup
+      // If email confirmation is required, redirect to verification page
+      if (!data.session) {
         router.push('/verify-email')
+        return
       }
-    } catch (err) {
-      setError(err.message)
+
+      // If email confirmation is disabled (immediate session)
+      router.push('/')
+      
+    } catch (err: any) {
+      setError(err.message || 'Signup failed')
     } finally {
       setLoading(false)
     }
