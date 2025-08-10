@@ -3,23 +3,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
-
-interface VolumeInfo {
-  title: string
-  authors?: string[]
-  imageLinks?: {
-    thumbnail?: string
-    small?: string
-    medium?: string
-    large?: string
-    extraLarge?: string
-  }
-}
-
-interface BookItem {
-  id: string
-  volumeInfo: VolumeInfo
-}
+import { BookItem } from '@/types/books'
 
 function SearchPage() {
   const searchParams = useSearchParams()
