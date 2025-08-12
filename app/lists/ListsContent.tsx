@@ -63,32 +63,34 @@ export function ListsContent() {
 
   if (isLoading) {
     return (
-      <div className="bg-black text-white min-h-screen p-8">
-        <h1 className="text-5xl font-bold mb-6">Your Wishlist</h1>
-        <p className="text-gray-400">Loading...</p>
+      <div className="pt-24 p-6 text-white bg-black min-h-screen">
+        <h1 className="text-2xl font-bold mb-4">Your Wishlist</h1>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="bg-black text-white min-h-screen p-8">
-        <h1 className="text-5xl font-bold mb-6">Your Wishlist</h1>
-        <p className="text-red-400">{error}</p>
+      <div className="pt-24 p-6 text-white bg-black min-h-screen">
+        <h1 className="text-2xl font-bold mb-4">Your Wishlist</h1>
+        <div className="bg-red-900/50 p-4 rounded-lg mb-4">
+          <p className="text-red-300">Error: {error}</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-black text-white min-h-screen p-8">
-      <h1 className="text-5xl font-bold mb-6">Your Wishlist</h1>
+    <div className="pt-24 p-6 text-white bg-black min-h-screen">
+      <h1 className="text-2xl font-bold mb-4">Your Wishlist</h1>
 
       {items.length === 0 ? (
-        <p className="text-gray-400">
-          No books yet—search and add some from the search page!
-        </p>
+        <p className="text-gray-400">No books yet—search and add some from the search page!</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
           {items.map((item) => {
             const thumb = item.thumbnail?.trim()
             const authorsText = Array.isArray(item.authors)
@@ -100,32 +102,37 @@ export function ListsContent() {
             return (
               <div
                 key={item.id}
-                className="bg-gray-900 rounded shadow overflow-hidden flex flex-col"
+                className="bg-gray-900 p-2 rounded shadow flex flex-col h-full hover:shadow-lg transition-shadow"
               >
-                {thumb ? (
-                  <img
-                    src={thumb.replace(/^http:\/\//, 'https://')}
-                    alt={item.title}
-                    className="w-full h-[300px] object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-[300px] bg-gray-800 flex items-center justify-center text-gray-500">
-                    No image
-                  </div>
-                )}
-
-                <div className="p-4 flex-1 flex flex-col">
-                  <h2 className="text-xl font-semibold mb-2 truncate">
-                    {item.title}
-                  </h2>
-                  {authorsText && (
-                    <p className="text-sm text-gray-400 mb-4 truncate">
-                      {authorsText}
-                    </p>
+                <div className="mt-2 w-full h-60">
+                  {thumb ? (
+                    <img
+                      src={thumb.replace(/^http:\/\//, 'https://')}
+                      alt={item.title}
+                      className="w-full h-full object-contain rounded mb-2"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
+                      No cover available
+                    </div>
                   )}
+                </div>
+
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h2 className="text-md font-semibold mb-1 line-clamp-2">
+                      {item.title}
+                    </h2>
+                    {authorsText && (
+                      <p className="text-sm text-gray-400 line-clamp-1">
+                        {authorsText}
+                      </p>
+                    )}
+                  </div>
+
                   <button
                     onClick={() => handleRemove(item.id)}
-                    className="mt-auto bg-red-600 hover:bg-red-700 text-white py-2 rounded"
+                    className="mt-3 bg-red-600 hover:bg-red-700 text-white py-1.5 text-sm rounded w-full transition-colors"
                   >
                     Remove
                   </button>
