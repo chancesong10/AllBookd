@@ -15,7 +15,7 @@ export default function Navbar() {
 
   const Links = [
     { href: "/", text: "Home" },
-    { href: "/books", text: "Books" },
+    { href: "/books", text: "Genres" },
     { href: "/lists", text: "Lists" },
     { href: "/about", text: "About" },
   ]
