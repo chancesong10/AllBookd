@@ -23,7 +23,7 @@ export default async function BookPage({ params }: { params: { id: string } }) {
               <img
                 src={info.imageLinks.thumbnail.replace(/^http:\/\//, "https://")}
                 alt={info.title}
-                className="w-48 h-auto rounded shadow"
+                className="w-full h-full object-contain rounded mb-2"
               />
             )}
     
