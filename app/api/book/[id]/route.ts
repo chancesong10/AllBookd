@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: any) {
+  const { id } = params;
+  
   const key = process.env.GOOGLE_BOOKS_API_KEY;
   if (!key) {
     return NextResponse.json(
@@ -8,8 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     );
   }
- 
-  const id = params.id;
+
   const url = new URL(`https://www.googleapis.com/books/v1/volumes/${id}`);
   url.searchParams.set('key', key);
 
