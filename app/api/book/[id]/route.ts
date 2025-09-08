@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     );
   }
-
+ 
   const id = params.id;
   const url = new URL(`https://www.googleapis.com/books/v1/volumes/${id}`);
   url.searchParams.set('key', key);
