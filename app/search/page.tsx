@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { BookItem } from '@/types/books'
+import Link from 'next/link'
 
 function SearchPage() {
   const searchParams = useSearchParams()
@@ -120,11 +121,13 @@ function SearchPage() {
                   >
                     <div className="mt-2 w-full h-60">
                       {thumbnail ? (
-                        <img
-                          src={thumbnail}
-                          alt={info.title}
-                          className="w-full h-full object-contain rounded mb-2"
-                        />
+                        <Link href={`/book/${book.id}`}>
+                            <img
+                            src={thumbnail}
+                            alt={info.title}
+                            className="w-full h-full object-contain rounded mb-2"
+                            />
+                        </Link>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
                           No cover available
@@ -134,9 +137,11 @@ function SearchPage() {
 
                     <div className="p-4 flex-1 flex flex-col justify-between">
                       <div>
-                        <h2 className="text-md font-semibold mb-1 line-clamp-2">
-                          {info.title}
-                        </h2>
+                        <Link href={`/book/${book.id}`}>
+                            <h2 className="text-md font-semibold mb-1 line-clamp-2">
+                            {info.title}
+                            </h2>
+                        </Link>
                         {info.authors && (
                           <p className="text-sm text-gray-400 line-clamp-1">
                             {info.authors.join(', ')}
