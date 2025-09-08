@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { addToWishlist } from '@/lib/addtowishlist'
 import AddToListButton from '@/app/components/addtolistbutton'
+import Link from 'next/link'
 
 export default function BookRow({ title, books }: BookRowProps) {
     const [user, setUser] = useState<User | null>(null)
@@ -74,20 +75,24 @@ export default function BookRow({ title, books }: BookRowProps) {
                         >
                             {/* Image */}
                             <div className="mt-2 w-full h-60">
-                                <img
-                                    src={`https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api`}
-                                    alt={info.title}
-                                    draggable={false}
-                                    className="w-full h-full object-contain rounded mb-2 shadow-md hover:shadow-lg transition-shadow duration-200 transform hover:scale-105"
-                                />
+                                <Link href={`/book/${book.id}`}>
+                                    <img
+                                        src={`https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api`}
+                                        alt={info.title}
+                                        draggable={false}
+                                        className="w-full h-full object-contain rounded mb-2 shadow-md hover:shadow-lg transition-shadow duration-200 transform hover:scale-105"
+                                    />
+                                </Link>
                             </div>
 
                             {/*Info + Button*/}
                             <div className="p-4 flex-1 flex flex-col justify-between">
                                 <div>
-                                    <h2 className="text-md font-semibold mb-1 line-clamp-2">
-                                        {info.title}
-                                    </h2>
+                                    <Link href={`/book/${book.id}`}>
+                                        <h2 className="text-md font-semibold mb-1 line-clamp-2">
+                                            {info.title}
+                                        </h2>
+                                    </Link>
                                     {Array.isArray(info.authors) && (
                                         <p className="text-sm text-gray-400 line-clamp-1">
                                             {info.authors.join(', ')}
