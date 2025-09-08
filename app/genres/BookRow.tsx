@@ -3,6 +3,7 @@ import { BookRowProps } from '@/types/books'
 import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { addToWishlist } from '@/lib/addtowishlist'
+import AddToListButton from '@/app/components/addtolistbutton'
 
 export default function BookRow({ title, books }: BookRowProps) {
     const [user, setUser] = useState<User | null>(null)
@@ -93,13 +94,7 @@ export default function BookRow({ title, books }: BookRowProps) {
                                         </p>
                                     )}
                                 </div>
-
-                                <button
-                                    onClick={() => addToWishlist(book, user)}
-                                    className="mt-3 bg-green-600 hover:bg-green-700 text-white py-1.5 text-sm rounded w-full"
-                                >
-                                    + Add to Wishlist
-                                </button>
+                                <AddToListButton book={book} user={user} />
                             </div>
                         </div>
                     )
