@@ -4,28 +4,13 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
-
-interface BookItem {
-    id: string
-    book_id: string
-    title: string
-    authors: string[] | string
-    thumbnail: string | null
-    created_at: string
-    list_id?: string
-}
-
-interface UserList {
-    id: string
-    name: string
-    created_at: string
-}
+import { UserList, BookItemList } from '@/types/books'
 
 export function ListsContent() {
     const [user, setUser] = useState<User | null>(null)
-    const [wishlist, setWishlist] = useState<BookItem[]>([])
+    const [wishlist, setWishlist] = useState<BookItemList[]>([])
     const [lists, setLists] = useState<UserList[]>([])
-    const [listItems, setListItems] = useState<Record<string, BookItem[]>>({})
+    const [listItems, setListItems] = useState<Record<string, BookItemList[]>>({})
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [newListName, setNewListName] = useState("")
@@ -68,7 +53,7 @@ export function ListsContent() {
                         .in('list_id', listsData.map((l: any) => l.id))
                     if (itemsError) throw itemsError
 
-                    const grouped: Record<string, BookItem[]> = {}
+                    const grouped: Record<string, BookItemList[]> = {}
                     listItemsData?.forEach((item: any) => {
                         if (!grouped[item.list_id]) grouped[item.list_id] = []
                         grouped[item.list_id].push(item)
@@ -150,7 +135,7 @@ export function ListsContent() {
     }
 
     // ✅ Add book to a list
-    const addToList = async (book: BookItem, listId: string) => {
+    const addToList = async (book: BookItemList, listId: string) => {
         if (!user) return
         const { data, error } = await supabase.from('list_items').insert({
             user_id: user.id,
@@ -171,7 +156,7 @@ export function ListsContent() {
     }
 
     // ✅ Render books grid
-    const renderBooks = (books: BookItem[], listId?: string) => (
+    const renderBooks = (books: BookItemList[], listId?: string) => (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {books.map((item) => {
                 const thumb = item.thumbnail?.trim()

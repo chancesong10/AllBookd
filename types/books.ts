@@ -15,6 +15,16 @@ export interface BookItem {
     volumeInfo: VolumeInfo
 }
 
+export interface BookItemList {
+    id: string
+    book_id: string
+    title: string
+    authors: string[] | string
+    thumbnail: string | null
+    created_at: string
+    list_id?: string
+}
+
 export interface WishlistItem {
     id: string
     title: string
@@ -25,4 +35,10 @@ export interface WishlistItem {
 export interface BookRowProps {
     title: string
     books: BookItem[]
+}
+
+export interface UserList {
+    id: string
+    name: string
+    created_at: string
 }
