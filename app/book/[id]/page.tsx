@@ -1,18 +1,11 @@
 import { notFound } from "next/navigation";
 
-async function getBook(id: string) {
-    // Call your own API route
+export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/book/${id}`, { cache: "no-store" }); 
-    
-    if (!res.ok) return null;
-    return res.json();
-}
+    if (!res.ok) return notFound();
 
-export default async function BookPage({ params }: { params: { id: string } }) {
-    const book = await getBook(params.id);
-
-    if (!book) return notFound();
-
+    const book = await res.json();
     const info = book.volumeInfo;
 
     return (
