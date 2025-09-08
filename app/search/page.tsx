@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { BookItem } from '@/types/books'
 import Link from 'next/link'
+import AddToListButton from '@/app/components/addtolistbutton'
 
 function SearchPage() {
   const searchParams = useSearchParams()
@@ -149,12 +150,7 @@ function SearchPage() {
                         )}
                       </div>
 
-                      <button
-                        onClick={() => addToWishlist(book)}
-                        className="mt-3 bg-green-600 hover:bg-green-700 text-white py-1.5 text-sm rounded w-full transition-colors"
-                      >
-                        + Add to Wishlist
-                      </button>
+                      <AddToListButton book={book} user={user} />
                     </div>
                   </div>
                 )
