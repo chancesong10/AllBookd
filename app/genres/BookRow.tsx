@@ -89,7 +89,7 @@ export default function BookRow({ title, books }: BookRowProps) {
                             <div className="p-4 flex-1 flex flex-col justify-between">
                                 <div>
                                     <Link href={`/book/${book.id}`}>
-                                        <h2 className="text-md font-semibold mb-1 line-clamp-2">
+                                        <h2 className="text-md font-semibold mb-1 line-clamp-2 hover:underline">
                                             {info.title}
                                         </h2>
                                     </Link>

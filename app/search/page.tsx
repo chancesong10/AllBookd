@@ -112,8 +112,7 @@ function SearchPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {results.map((book) => {
                 const info = book.volumeInfo
-                const thumbnail = info.imageLinks?.thumbnail?.replace(/^http:\/\//, 'https://') || 
-                  `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api`
+                const thumbnail = `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api` || info.imageLinks?.thumbnail?.replace(/^http:\/\//, 'https://')
 
                 return (
                   <div
@@ -139,7 +138,7 @@ function SearchPage() {
                     <div className="p-4 flex-1 flex flex-col justify-between">
                       <div>
                         <Link href={`/book/${book.id}`}>
-                            <h2 className="text-md font-semibold mb-1 line-clamp-2">
+                            <h2 className="text-md font-semibold mb-1 line-clamp-2 hover:underline">
                             {info.title}
                             </h2>
                         </Link>
