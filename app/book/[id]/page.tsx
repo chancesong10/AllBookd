@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import parse from "html-react-parser";
 
 export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -52,7 +53,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
     
               {info.description && (
                 <p className="mt-4 text-gray-200 leading-relaxed">
-                  {info.description}
+                  {parse(info.description)}
                 </p>
               )}
             </div>

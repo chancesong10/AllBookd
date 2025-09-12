@@ -126,7 +126,7 @@ function SearchPage() {
                             <img
                             src={thumbnail}
                             alt={info.title}
-                            className="w-full h-full object-contain rounded mb-2"
+                            className="w-full h-full object-contain rounded mb-2 shadow-md hover:shadow-lg transition-shadow duration-200 transform hover:scale-105"
                             />
                         </Link>
                       ) : (
