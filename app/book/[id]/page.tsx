@@ -10,47 +10,52 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
     const info = book.volumeInfo;
 
     return (
-        <div className="pt-24 p-6 text-white bg-black min-h-screen">
-          <div className="flex flex-col md:flex-row gap-8">
+        <div className="min-h-screen bg-black pt-24 text-white">
+          <div className="flex flex-col md:flex-row w-full max-w-6xl mx-auto gap-6 px-4">
+            
             {/* Cover image */}
             {info.imageLinks?.thumbnail && (
               <img
-                src={info.imageLinks.thumbnail.replace(/^http:\/\//, "https://")}
+                src={`https://books.google.com/books/publisher/content/images/frontcover/${id}?fife=w400-h600&source=gbs_api`}
                 alt={info.title}
-                className="w-full h-full object-contain rounded mb-2"
+                className="w-full md:w-60 h-80 object-contain rounded shadow-lg bg-gray-900"
               />
             )}
-    
+      
             {/* Book details */}
-            <div>
-              <h1 className="text-3xl font-bold">{info.title}</h1>
-    
+            <div className="flex flex-col justify-start">
+              <h1 className="text-3xl font-bold mb-2">{info.title}</h1>
+      
               {info.authors && (
-                <p className="text-lg text-gray-300">by {info.authors.join(", ")}</p>
+                <p className="text-lg text-gray-300 mb-1">
+                  by {info.authors.join(", ")}
+                </p>
               )}
-    
+      
               {info.publishedDate && (
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm text-gray-400 mb-1">
                   Published: {info.publishedDate}
                 </p>
               )}
-    
+      
               {info.averageRating && (
-                <p className="mt-2 text-yellow-400">
+                <p className="text-yellow-400 mb-2">
                   ⭐ {info.averageRating} / 5 ({info.ratingsCount} ratings)
                 </p>
               )}
-    
+      
               {info.publisher && (
-                <p className="text-sm text-gray-400 mt-1">Publisher: {info.publisher}</p>
+                <p className="text-sm text-gray-400 mb-1">
+                  Publisher: {info.publisher}
+                </p>
               )}
-    
+      
               {info.categories && (
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm text-gray-400 mb-1">
                   Categories: {info.categories.join(", ")}
                 </p>
               )}
-    
+      
               {info.description && (
                 <p className="mt-4 text-gray-200 leading-relaxed">
                   {parse(info.description)}
