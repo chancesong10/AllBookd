@@ -67,23 +67,44 @@ export default function Genres() {
         <div className="flex bg-black text-white min-h-screen">
 
             {/* Sidebar */}
-            <aside className="w-64 bg-gray-900 pt-24 pr-4 pl-4 border-r border-gray-800">
+            <aside className="w-72 bg-gray-900 pt-24 pr-4 pl-4 border-r border-gray-800">
                 <form onSubmit={handleSearch}>
                     <input
                         type="text"
                         placeholder="Search any genre..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full p-2 rounded-xl bg-gray-800 text-white mb-4 focus:outline-none"
+                        className="w-full p-2 rounded-xl bg-gray-800 text-white mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none"
+                        className="w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold py-2 px-4 rounded-lg "
                     >
                         Search
                     </button>
                 </form>
+
+                {/* Future: list of genres */}
+                <div className="mt-8 space-y-2">
+                    <h2 className="px-3 text-gray-400 test-sm uppercase tracking-wide">
+                        Featured Genres
+                    </h2>
+                    <ul className="space-y-2">
+                        {['Fantasy', 'Romance', 'History', 'Mystery', 'Thriller', 'Biography', 'Self-Help', 'Poetry'].map((genre) => (
+                            <li key={genre}>
+                                <button
+                                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                                    onClick={() => fetchByGenre(genre)}
+                                >
+                                    {genre}
+                                </button>
+                            </li>
+                        )
+                        )}
+                    </ul>
+                </div>
             </aside>
+
 
             {/* Main content */}
             <main className="flex-1 p-2 overflow-x-hidden">
@@ -92,7 +113,7 @@ export default function Genres() {
                 {/* Search results */}
                 {!loading && searchResults.length > 0 && (
                     <div className="pt-18 p-4">
-                    <BookRow title={`Results for "${search}"`} books={searchResults} />
+                        <BookRow title={`Results for "${search}"`} books={searchResults} />
                     </div>
                 )}
 
