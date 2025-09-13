@@ -76,12 +76,16 @@ export default function AddToListButton({ book, user }: AddToListButtonProps) {
     }
   }
 
-  if (!user) return null
-
   return (
     <div className="relative w-full">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+            if (!user) {
+                alert('Please log in to add books to your personalized lists!')
+                return
+            }
+            setOpen(!open)
+        }}
         className="mt-3 bg-green-600 hover:bg-green-700 text-white py-1.5 text-sm rounded w-full"
       >
         + Add to List

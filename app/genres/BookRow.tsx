@@ -71,7 +71,7 @@ export default function BookRow({ title, books }: BookRowProps) {
                     return (
                         <div
                             key={book.id}
-                            className="min-w-[200px] h-[420px] rounded shadow flex flex-col bg-gray-900 p-2"
+                            className="min-w-[200px] rounded shadow flex flex-col bg-gray-900 p-2"
                         >
                             {/* Image */}
                             <div className="mt-2 w-full h-60">
