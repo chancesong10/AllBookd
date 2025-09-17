@@ -213,29 +213,6 @@ export function ListsContent() {
                                         >
                                             Remove from Wishlist
                                         </button>
-                                        {lists.length > 0 && (
-                                            <div className="mt-2">
-                                                <select
-                                                    className="w-full bg-gray-800 text-white text-sm rounded p-1"
-                                                    onChange={(e) => {
-                                                        if (e.target.value) {
-                                                            addToList(item, e.target.value)
-                                                            e.target.value = ""
-                                                        }
-                                                    }}
-                                                    defaultValue=""
-                                                >
-                                                    <option value="" disabled>
-                                                        ➕ Add to List
-                                                    </option>
-                                                    {lists.map((list) => (
-                                                        <option key={list.id} value={list.id}>
-                                                            {list.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
                                     </>
                                 )}
                             </div>
