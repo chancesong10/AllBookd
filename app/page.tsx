@@ -1,7 +1,8 @@
+import { ammira } from '@/app/layout'
 export default function Page() {
   return (
     <div className="bg-black text-white min-h-screen w-full flex flex-col items-center justify-center text-center">
-      <h1 className="text-5xl font-bold mb-5">AllBookd</h1>
+      <h1 className={`${ammira.className} text-5xl font-bold mb-5`}>AllBookd</h1>
       <h2 className="text-2xl font-bold">
         Keep Track of Books You Love
         <br></br>
