@@ -158,70 +158,64 @@ export function ListsContent() {
     // ✅ Render books grid
     const renderBooks = (books: BookItemList[], listId?: string) => (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-            {books.map((item) => {
-                const thumb = item.thumbnail?.trim()
-                const authorsText = Array.isArray(item.authors)
-                    ? item.authors.join(', ')
-                    : typeof item.authors === 'string'
-                        ? item.authors
-                        : ''
-
-                return (
-                    <div
-                        key={item.id}
-                        className="bg-gray-900 p-3 rounded shadow flex flex-col h-full hover:shadow-lg transition-shadow"
-                    >
-                        <div className="w-full h-52">
-                            <Link href={`/book/${item.book_id}`}>
-                                {thumb ? (
-                                        <img
-                                            src={thumb.replace(/^http:\/\//, 'https://')}
-                                            alt={item.title}
-                                            className="w-full h-full object-contain rounded mb-2"
-                                        />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
-                                        No cover available
-                                    </div>
-                                )}
-                            </Link>
-                        </div>
-                        <div className="flex-1 flex flex-col justify-between">
-                            <div>
-                                <Link href={`/book/${item.book_id}`}>
-                                    <h2 className="text-sm font-semibold mb-1 line-clamp-2">
-                                        {item.title}
-                                    </h2>
-                                </Link>
-                                {authorsText && (
-                                    <p className="text-xs text-gray-400 line-clamp-1">{authorsText}</p>
-                                )}
-                            </div>
-                            <div className="mt-3 space-y-2">
-                                {listId ? (
-                                    <button
-                                        className="w-full bg-red-600 hover:bg-red-700 text-white text-sm py-1 rounded"
-                                        onClick={() => removeFromList(listId, item.id)}
-                                    >
-                                        Remove from List
-                                    </button>
-                                ) : (
-                                    <>
-                                        <button
-                                            className="w-full bg-red-600 hover:bg-red-700 text-white text-sm py-1 rounded"
-                                            onClick={() => removeFromWishlist(item.id)}
-                                        >
-                                            Remove from Wishlist
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )
-            })}
+          {books.map((item) => {
+            const coverUrl = `https://books.google.com/books/publisher/content/images/frontcover/${item.book_id}?fife=w400-h600&source=gbs_api`
+            const authorsText =
+            Array.isArray(item.authors)
+              ? item.authors.join(", ")
+              : typeof item.authors === "string"
+                ? item.authors.replace(/[\[\]"]+/g, "") 
+                : ""
+      
+            return (
+              <div
+                key={item.id}
+                className="bg-gray-900 p-3 rounded shadow flex flex-col h-full hover:shadow-lg transition-shadow"
+              >
+                <div className="w-full h-52">
+                  <Link href={`/book/${item.book_id}`}>
+                    <img
+                      src={coverUrl}
+                      alt={item.title}
+                      className="w-full h-full object-contain rounded mb-2"
+                    />
+                  </Link>
+                </div>
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <Link href={`/book/${item.book_id}`}>
+                      <h2 className="text-sm font-semibold mb-1 line-clamp-2">
+                        {item.title}
+                      </h2>
+                    </Link>
+                    {authorsText && (
+                      <p className="text-xs text-gray-400 line-clamp-1">{authorsText}</p>
+                    )}
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {listId ? (
+                      <button
+                        className="w-full bg-red-600 hover:bg-red-700 text-white text-sm py-1 rounded"
+                        onClick={() => removeFromList(listId, item.id)}
+                      >
+                        Remove from List
+                      </button>
+                    ) : (
+                      <button
+                        className="w-full bg-red-600 hover:bg-red-700 text-white text-sm py-1 rounded"
+                        onClick={() => removeFromWishlist(item.id)}
+                      >
+                        Remove from Wishlist
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
-    )
+      )
+      
 
     if (isLoading) return (
         <div className="pt-24 p-6 text-white bg-black min-h-screen">
