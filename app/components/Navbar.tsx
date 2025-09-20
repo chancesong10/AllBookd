@@ -85,19 +85,20 @@ export default function Navbar() {
       <div className="fixed bg-gray-900 p-4 w-full flex items-center z-50">
         {/* Logo */}
         <div>
-          <Link href="/" className="ml-4 text-white text-2xl font-bold">
+          <Link href="/" style={{fontFamily: 'Playfair Display', fontSize: '35px'}} className="ml-4 text-white">
             AllBookd
           </Link>
         </div>
 
         {/* Nav links */}
         <div className="flex-1 flex justify-center">
-          <ul className="flex space-x-4">
+          <ul className="flex space-x-14">
             {Links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-white px-4 py-2 rounded-md hover:bg-blue-800 transition"
+                  style={{fontFamily: 'inter', fontSize: '18px'}}
+                  className="text-white font-bold px-4 py-2 rounded-md hover:bg-blue-800 transition"
                 >
                   {link.text}
                 </Link>

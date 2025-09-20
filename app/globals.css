@@ -29,6 +29,20 @@
   }
 }
 
+@font-face {
+    font-family: 'Playfair Display';
+    src: url('/fonts/PlayfairDisplay-VariableFont_wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -38,3 +52,4 @@ body {
 html, body {
     overscroll-behavior: none;
 }
+
