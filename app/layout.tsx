@@ -3,12 +3,6 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import Navbar from '@/app/components/Navbar'
-import localFont from 'next/font/local'
-
-export const ammira = localFont({ 
-    src: './Ammira-BLm4x.otf', 
-    variable: '--font-ammira',
-})
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
