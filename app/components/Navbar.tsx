@@ -97,7 +97,7 @@ export default function Navbar() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  style={{fontFamily: 'inter', fontSize: '18px'}}
+                  style={{fontFamily: 'Inter', fontSize: '18px'}}
                   className="text-white font-bold px-4 py-2 rounded-md hover:bg-blue-800 transition"
                 >
                   {link.text}
