@@ -9,70 +9,59 @@ import Link from 'next/link'
 export default function BookRow({ title, books }: BookRowProps) {
     const [user, setUser] = useState<User | null>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
-    const isDragging = useRef(false)
-    const startX = useRef(0)
-    const scrollLeft = useRef(0)
 
     useEffect(() => {
-        // Check current session
         const getSession = async () => {
             const { data: { session } } = await supabase.auth.getSession()
             setUser(session?.user ?? null)
         }
-
         getSession()
 
-        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setUser(session?.user ?? null)
         })
-
         return () => subscription?.unsubscribe()
     }, [])
 
-    const handleMouseDown = (e: React.MouseEvent) => {
-        isDragging.current = true
-        startX.current = e.pageX - (scrollRef.current?.offsetLeft || 0)
-        scrollLeft.current = scrollRef.current?.scrollLeft || 0
-    }
-
-    const handleMouseUp = () => {
-        isDragging.current = false
-    }
-
-    const handleMouseLeave = () => {
-        isDragging.current = false
-    }
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging.current || !scrollRef.current) return
-        e.preventDefault()
-
-        const x = e.pageX - scrollRef.current.offsetLeft
-        const walk = (x - startX.current) * 1.5;
-        scrollRef.current.scrollLeft = scrollLeft.current - walk
+    // Scroll arrows
+    const scroll = (direction: 'left' | 'right') => {
+        if (!scrollRef.current) return
+        const scrollAmount = 300
+        scrollRef.current.scrollBy({
+            left: direction === 'right' ? scrollAmount : -scrollAmount,
+            behavior: 'smooth'
+        })
     }
 
     return (
-        <div>
+        <div className="relative">
             <h1 className="text-2xl font-bold mb-2 mt-5">{title}</h1>
 
+            {/* Left arrow */}
+            <button
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black/50 p-4 rounded-full z-10 hover:bg-black/70 text-2xl"
+            >
+                &#8249;
+            </button>
+
+            {/* Right arrow */}
+            <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black/50 p-4 rounded-full z-10 hover:bg-black/70 text-2xl"
+            >
+                &#8250;
+            </button>
+
             <div
-                className="flex overflow-x-scroll space-x-4 no-scrollbar select-none"
                 ref={scrollRef}
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
-                onMouseMove={handleMouseMove}
+                className="flex overflow-x-scroll space-x-4 no-scrollbar select-none"
             >
                 {books.map((book) => {
-                    const info = book.volumeInfo;
-
+                    const info = book.volumeInfo
                     return (
-                        <div
-                            key={book.id}
-                            className="min-w-[200px] rounded shadow flex flex-col bg-gray-900 p-2"
-                        >
+                        <div key={book.id} className="min-w-[200px] rounded shadow flex flex-col bg-gray-900 p-2">
+
                             {/* Image */}
                             <div className="mt-2 w-full h-60">
                                 <Link href={`/book/${book.id}`}>

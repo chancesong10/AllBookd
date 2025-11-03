@@ -94,7 +94,10 @@ export default function Genres() {
                             <li key={genre}>
                                 <button
                                     className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-                                    onClick={() => fetchByGenre(genre)}
+                                    onClick={() => {
+                                        setSearch(genre);
+                                        fetchByGenre(genre);
+                                    }}
                                 >
                                     {genre}
                                 </button>
