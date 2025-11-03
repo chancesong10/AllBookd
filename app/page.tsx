@@ -56,8 +56,8 @@ export default function Page() {
             backgroundPosition: "center",
             backgroundSize: "cover",
             y: backgroundY,
-            top: '80px',
-            height: 'calc(100vh - 80px)', 
+            top: '65px',
+            height: 'calc(100vh - 65px)', 
           }}
         />
         
@@ -69,8 +69,8 @@ export default function Page() {
             backgroundPosition: "center",
             backgroundSize: "cover",
             y: maskY,
-            top: '80px',
-            height: 'calc(100vh - 80px)', 
+            top: '65px',
+            height: 'calc(100vh - 65px)', 
           }}
         />
       </div>
