@@ -13,6 +13,11 @@ export default function Page() {
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const maskY = useTransform(scrollYProgress, [0, 1], ["0%", "-100%"]);
 
+
+  const backgroundOpacity = useTransform(scrollYProgress, [0.02, 0.2], [1, 0]);
+  const maskOpacity = useTransform(scrollYProgress, [0.02, 0.2], [1, 0]);
+
+
   const section1Opacity = useTransform(scrollYProgress, [0.05, 0.2], [0, 1]);
   const section1Y = useTransform(scrollYProgress, [0.05, 0.2], ["50px", "0px"]);
 
@@ -33,7 +38,19 @@ export default function Page() {
           className="relative z-40 h-full flex flex-col items-center justify-center text-center"
         >
           <h1 
-            style={{fontFamily: 'Playfair Display', fontSize: '5rem'}} 
+            style={{
+              fontFamily: 'Playfair Display', 
+              fontSize: '5rem'
+            //   color: '#FFFFFF',
+            //   fontWeight: '700',
+            //   textShadow: `
+            //     1px 1px 0 #000,
+            //     -1px -1px 0 #000,
+            //     1px -1px 0 #000,
+            //     -1px 1px 0 #000,
+            //     0 2px 8px rgba(0, 0, 0, 0.5)
+            //   `
+            }} 
             className="mb-5 text-white"
           >
             AllBookd
@@ -48,36 +65,45 @@ export default function Page() {
           </p>
         </motion.div>
 
-        {/* Main background image - adjust top to account for navbar */}
+        {/* Main background image */}
         <motion.div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(/main.jpg)`,
-            backgroundPosition: "center",
-            backgroundSize: "cover",
-            y: backgroundY,
-            top: '80px',
-            height: 'calc(100vh - 80px)', 
-          }}
+            className="absolute inset-0 z-0"
+            style={{
+                backgroundImage: `url(/main.jpg)`,
+                backgroundPosition: "center",
+                backgroundSize: "cover",
+            }}
         />
-        
-        {/* Mask image - adjust top to account for navbar */}
-        <motion.div
-          className="absolute inset-0 z-20"
-          style={{
-            backgroundImage: `url(/mask.png)`,
-            backgroundPosition: "center",
-            backgroundSize: "cover",
-            y: maskY,
-            top: '80px',
-            height: 'calc(100vh - 80px)', 
-          }}
-        />
-      </div>
 
-      {/* Content Sections - Reveal sequentially as you scroll */}
+        {/* Black overlay that fades in as you scroll */}
+        <motion.div
+        className="absolute inset-0 z-10 bg-black"
+        style={{
+                opacity: useTransform(scrollYProgress, [0.02, 0.2], [0, 0.5]),
+            }}
+        />
+
+        {/* Mask image */}
+        <motion.div
+        className="absolute inset-0 z-20"
+        style={{
+                backgroundImage: `url(/mask.png)`,
+                backgroundPosition: "center",
+                backgroundSize: "cover",
+            }}
+        />
+
+        {/* Black overlay for mask */}
+        <motion.div
+        className="absolute inset-0 z-30 bg-black"
+        style={{
+        opacity: useTransform(scrollYProgress, [0.02, 0.2], [0, 0.5]),
+            }}
+        />
+    </div>
+      {/* Content Sections with smooth transitions */}
       <div className="relative z-30 bg-black">
-        {/* Section 1 */}
+        {/* Section 1 - appears as images fade out */}
         <motion.section 
           style={{ opacity: section1Opacity, y: section1Y }}
           className="min-h-screen flex items-center justify-center text-white py-20"
