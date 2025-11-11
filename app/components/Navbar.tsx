@@ -82,7 +82,7 @@ export default function Navbar() {
 
   return (
     <nav>
-      <div className="fixed bg-darknavy bg-transparent py-1.5 px-4 w-full flex items-center z-50">
+      <div className="fixed bg-transparent py-1.5 px-4 w-full flex items-center z-50">
         {/* Logo */}
         <div>
           <Link href="/" style={{fontFamily: 'Playfair Display', fontSize: '35px'}} className="ml-4 text-white">
@@ -98,7 +98,7 @@ export default function Navbar() {
                 <Link
                   href={link.href}
                   style={{fontFamily: 'Inter', fontSize: '18px'}}
-                  className="text-white font-bold px-4 py-2 rounded-md hover:bg-blue-800 transition"
+                  className="text-white font-bold px-4 py-2 rounded-md inline-block transition-transform duration-200 hover:scale-110"
                 >
                   {link.text}
                 </Link>
@@ -110,19 +110,19 @@ export default function Navbar() {
         {/* Search and Auth */}
         <div className="ml-auto mr-4 flex gap-4 items-center">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
             <input 
               type="text" 
               placeholder="Search Books"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="pl-10 pr-4 py-2 rounded-xl bg-blue-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-700"
+              className="pl-10 pr-4 py-2 rounded-xl text-white placeholder-gray-400 bg-white/5 backdrop-blur focus:outline-none"
             />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
           </div>
 
           {isLoading ? (
