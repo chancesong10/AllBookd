@@ -82,7 +82,7 @@ export default function Navbar() {
 
   return (
     <nav>
-      <div className="fixed bg-darknavy py-1.5 px-4 w-full flex items-center z-50">
+      <div className="fixed bg-darknavy bg-transparent py-1.5 px-4 w-full flex items-center z-50">
         {/* Logo */}
         <div>
           <Link href="/" style={{fontFamily: 'Playfair Display', fontSize: '35px'}} className="ml-4 text-white">
