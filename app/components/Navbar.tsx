@@ -144,13 +144,13 @@ export default function Navbar() {
             <div className="flex gap-2">
               <Link
                 href="/login"
-                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm text-white"
+                className="bg-white/5 hover:bg-white/10 backdrop-blur px-4 py-2 rounded-xl text-sm text-white font-bold"
               >
                 Login
               </Link>
               <Link
                 href="/signup"
-                className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm text-white"
+                className="bg-white/5 hover:bg-white/10 backdrop-blur px-4 py-2 rounded-xl text-sm text-white font-bold"
               >
                 Sign Up
               </Link>
