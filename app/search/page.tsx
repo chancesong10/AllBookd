@@ -1,4 +1,5 @@
 'use client'
+
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
@@ -6,6 +7,18 @@ import { User } from '@supabase/supabase-js'
 import { BookItem } from '@/types/books'
 import Link from 'next/link'
 import AddToListButton from '@/app/components/addtolistbutton'
+
+// 1. Create a reusable "Skeleton" component for the loading state
+const BookSkeleton = () => (
+  <div className="bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 animate-pulse">
+    <div className="aspect-[2/3] bg-neutral-800" />
+    <div className="p-4 space-y-3">
+      <div className="h-4 bg-neutral-800 rounded w-3/4" />
+      <div className="h-3 bg-neutral-800 rounded w-1/2" />
+      <div className="h-8 bg-neutral-800 rounded w-full mt-4" />
+    </div>
+  </div>
+)
 
 function SearchPage() {
   const searchParams = useSearchParams()
@@ -40,7 +53,7 @@ function SearchPage() {
     return () => subscription?.unsubscribe()
   }, [])
 
-  // Fetch search results (with pagination)
+  // Fetch search results
   useEffect(() => {
     if (!query.trim()) {
       setResults([])
@@ -49,7 +62,6 @@ function SearchPage() {
       return
     }
 
-    // Use AbortController to cancel previous requests
     const abortController = new AbortController()
 
     const fetchBooks = async () => {
@@ -73,9 +85,7 @@ function SearchPage() {
         setResults(data.items || [])
         setTotalItems(data.totalItems || 0)
       } catch (err: any) {
-        if (err.name === 'AbortError') {
-          return // Request was cancelled, ignore
-        }
+        if (err.name === 'AbortError') return
         console.error('Search error:', err)
         setError(err.message)
         setResults([])
@@ -86,150 +96,130 @@ function SearchPage() {
     }
 
     fetchBooks()
-
-    // Cleanup: abort the request if component unmounts or dependencies change
-    return () => {
-      abortController.abort()
-    }
+    return () => abortController.abort()
   }, [query, page])
-
-  // Add to wishlist
-  const addToWishlist = async (book: BookItem) => {
-    if (!user) {
-      alert('Please log in to add books to your wishlist.')
-      return
-    }
-
-    const info = book.volumeInfo
-    const thumbnail = info.imageLinks?.thumbnail?.replace(/^http:\/\//, 'https://') || ''
-
-    try {
-      const { error } = await supabase
-        .from('wishlist')
-        .insert([{
-          user_id: user.id,
-          book_id: book.id,
-          title: info.title,
-          authors: info.authors || [],
-          thumbnail
-        }])
-
-      if (error) throw error
-      alert(`✅ Added "${info.title}" to your wishlist`)
-    } catch (error) {
-      console.error('Error adding to wishlist:', error)
-      alert('Failed to add to wishlist. Please try again.')
-    }
-  }
 
   // UI
   return (
-    <div className="pt-24 p-6 text-white bg-black min-h-screen">
-      {!query ? (
-        <p className="text-gray-400">Type in the search box above and hit Enter to search.</p>
-      ) : (
-        <>
-          <h1 className="text-2xl font-bold mb-4">
-            {isLoading ? 'Searching...' : `Results for "${query}"`}
-          </h1>
-
-          {error && (
-            <div className="bg-red-900/50 p-4 rounded-lg mb-4">
-              <p className="text-red-300">Search Error: {error}</p>
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 pt-24 px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header Section */}
+        {!query ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+            <h2 className="text-3xl font-bold tracking-tight text-neutral-200">Start your search</h2>
+            <p className="text-neutral-400 max-w-md">Type in the search box above to discover your next favorite book.</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-end justify-between border-b border-neutral-800 pb-4">
+              <h1 className="text-2xl font-bold tracking-tight">
+                {isLoading ? (
+                  <span className="animate-pulse">Searching...</span>
+                ) : (
+                  <>Results for <span className="text-blue-400">"{query}"</span></>
+                )}
+              </h1>
+              {!isLoading && (
+                <span className="text-sm text-neutral-500 hidden sm:block">
+                  {totalItems.toLocaleString()} books found
+                </span>
+              )}
             </div>
-          )}
 
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : results.length === 0 ? (
-            <p className="text-gray-400">No books found. Try a different search term.</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                {results.map((book) => {
+            {error && (
+              <div className="bg-red-900/20 border border-red-900/50 p-4 rounded-lg flex items-center gap-3">
+                <span className="text-xl">⚠️</span>
+                <p className="text-red-200 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Results Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              {isLoading ? (
+                // Show 12 skeleton items while loading
+                Array.from({ length: 12 }).map((_, i) => <BookSkeleton key={i} />)
+              ) : results.length === 0 ? (
+                <div className="col-span-full py-20 text-center">
+                  <p className="text-neutral-400 text-lg">No books found matching your criteria.</p>
+                </div>
+              ) : (
+                results.map((book) => {
                   const info = book.volumeInfo
-                  const thumbnail =
-                    `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api` ||
-                    info.imageLinks?.thumbnail?.replace(/^http:\/\//, 'https://')
+                  // High res image logic
+                  const thumbnail = `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api` || info.imageLinks?.thumbnail?.replace(/^http:\/\//, 'https://')
 
                   return (
                     <div
                       key={book.id}
-                      className="bg-gray-900 p-2 rounded shadow flex flex-col h-full hover:shadow-lg transition-shadow"
+                      className="group flex flex-col h-full bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-neutral-600 transition-all duration-300 hover:shadow-2xl hover:shadow-black/50"
                     >
-                      <div className="mt-2 w-full h-60">
+                      {/* Image Container with fixed Aspect Ratio */}
+                      <div className="relative aspect-[2/3] overflow-hidden bg-neutral-800">
                         {thumbnail ? (
-                          <Link href={`/book/${book.id}`}>
+                          <Link href={`/book/${book.id}`} className="block w-full h-full">
                             <img
                               src={thumbnail}
                               alt={info.title}
-                              className="w-full h-full object-contain rounded mb-2 shadow-md hover:shadow-lg transition-shadow duration-200 transform hover:scale-105"
+                              loading="lazy"
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                           </Link>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
-                            No cover available
+                          <div className="w-full h-full flex items-center justify-center text-neutral-600">
+                            <span className="text-xs uppercase tracking-wider font-semibold">No Cover</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                          <Link href={`/book/${book.id}`}>
-                            <h2 className="text-md font-semibold mb-1 line-clamp-2 hover:underline">
-                              {info.title}
-                            </h2>
-                          </Link>
-                          {info.authors && (
-                            <p className="text-sm text-gray-400 line-clamp-1">
-                              {info.authors.join(', ')}
-                            </p>
-                          )}
+                      {/* Content */}
+                      <div className="p-4 flex-1 flex flex-col">
+                        <Link href={`/book/${book.id}`} className="block flex-1">
+                          <h2 className="text-sm font-bold text-neutral-100 line-clamp-2 leading-tight group-hover:text-blue-400 transition-colors">
+                            {info.title}
+                          </h2>
+                          <p className="text-xs text-neutral-400 mt-1 line-clamp-1">
+                            {info.authors ? info.authors.join(', ') : 'Unknown Author'}
+                          </p>
+                        </Link>
+                        
+                        <div className="mt-4 pt-4 border-t border-neutral-800/50">
+                          <AddToListButton book={book} user={user} />
                         </div>
-
-                        <AddToListButton book={book} user={user} />
                       </div>
                     </div>
                   )
-                })}
-              </div>
+                })
+              )}
+            </div>
 
-              {/* Pagination buttons */}
-              <div className="flex justify-center items-center gap-4 mt-8">
+            {/* Pagination */}
+            {!isLoading && results.length > 0 && (
+              <div className="flex justify-center items-center gap-4 py-8 mt-4 border-t border-neutral-800">
                 <button
                   disabled={page === 0}
                   onClick={() => setPage((p) => Math.max(p - 1, 0))}
-                  className={`px-4 py-2 rounded-lg ${
-                    page === 0
-                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
+                  className="px-5 py-2 rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-neutral-800 hover:bg-neutral-700 text-white"
                 >
                   Previous
                 </button>
 
-                <span className="text-gray-400">
-                  Page {page + 1}
+                <span className="text-sm text-neutral-400 font-medium">
+                  Page <span className="text-white">{page + 1}</span>
                 </span>
 
                 <button
                   disabled={(page + 1) * resultsPerPage >= totalItems}
                   onClick={() => setPage((p) => p + 1)}
-                  className={`px-4 py-2 rounded-lg ${
-                    (page + 1) * resultsPerPage >= totalItems
-                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
+                  className="px-5 py-2 rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500 text-white"
                 >
                   Next
                 </button>
               </div>
-            </>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

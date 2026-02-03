@@ -77,7 +77,6 @@ export default function AddToListButton({ book, user }: AddToListButtonProps) {
     }
   }
 
-  // ✅ Create a new list and add the book to it
   const handleCreateAndAdd = async () => {
     if (!newListName.trim() || !user) return
     try {
@@ -88,11 +87,9 @@ export default function AddToListButton({ book, user }: AddToListButtonProps) {
         .single()
 
       if (error) throw error
-      setLists((prev) => [...prev, data]) // update local list state
+      setLists((prev) => [...prev, data]) 
 
-      // add the book to the new list
       await handleAddToList(data.id)
-
       setNewListName("")
     } catch (err) {
       console.error('Error creating list:', err)
@@ -102,6 +99,7 @@ export default function AddToListButton({ book, user }: AddToListButtonProps) {
 
   return (
     <div className="w-full">
+      {/* Main Trigger Button - Matches Card Aesthetic */}
       <button
         onClick={() => {
           if (!user) {
@@ -110,77 +108,82 @@ export default function AddToListButton({ book, user }: AddToListButtonProps) {
           }
           setOpen(true)
         }}
-        className="mt-3 bg-green-600 hover:bg-green-700 text-white py-1.5 text-sm rounded w-full"
+        className="w-full py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-sm font-medium transition-colors border border-neutral-700 hover:border-neutral-600"
       >
         + Add to List
       </button>
 
-      {/* ✅ Popup Modal */}
+      {/* Popup Modal */}
       {open && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-gray-900 text-white rounded-2xl shadow-xl p-6 w-96">
-      <h2 className="text-xl font-semibold mb-6 text-center">Add to List</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-neutral-900 text-neutral-100 rounded-2xl shadow-2xl border border-neutral-800 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Header */}
+            <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
+              <h2 className="text-lg font-bold">Save to...</h2>
+              <button 
+                onClick={() => setOpen(false)}
+                className="text-neutral-500 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
 
-      {/* Wishlist Button */}
-      <button
-        onClick={handleAddToWishlist}
-        className="w-full px-4 py-3 mb-3 rounded-lg bg-gradient-to-r from-pink-200 to-pink-400 hover:opacity-80 transition"
-      >
-        Add to Wishlist
-      </button>
+            <div className="p-6 space-y-6">
+              {/* Wishlist Button - Primary Action */}
+              <button
+                onClick={handleAddToWishlist}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-pink-900/30 text-pink-200 border border-pink-900/50 hover:bg-pink-900/50 hover:border-pink-500/50 transition-all group"
+              >
+                <span className="group-hover:scale-110 transition-transform">♥</span> 
+                Add to Wishlist
+              </button>
 
-      {/* Divider */}
-      <div className="border-t border-gray-700 my-4" />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-neutral-800"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-neutral-900 px-2 text-neutral-500">Or add to list</span>
+                </div>
+              </div>
 
-      {/* User’s Lists */}
-      <label className="block text-sm text-gray-400 mb-2">
-          Your lists
-        </label>
-      <div className="space-y-2 max-h-40 overflow-y-auto">
-        {lists.map((list) => (
-          <button
-            key={list.id}
-            onClick={() => handleAddToList(list.id)}
-            className="w-full px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition text-left"
-          >
-            {list.name}
-          </button>
-        ))}
-      </div>
+              {/* Existing Lists */}
+              {lists.length > 0 && (
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                  {lists.map((list) => (
+                    <button
+                      key={list.id}
+                      onClick={() => handleAddToList(list.id)}
+                      className="w-full px-4 py-3 rounded-xl bg-neutral-800/50 hover:bg-neutral-800 border border-transparent hover:border-neutral-700 text-left text-sm transition-all"
+                    >
+                      {list.name}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-      {/* Divider */}
-      <div className="border-t border-gray-700 my-4" />
-
-      {/* Create a new list */}
-      <div>
-        <label className="block text-sm text-gray-400 mb-2">
-          Create a new list
-        </label>
-        <input
-          type="text"
-          placeholder="New list name"
-          value={newListName}
-          onChange={(e) => setNewListName(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none mb-3"
-        />
-        <button
-          onClick={handleCreateAndAdd}
-          className="w-full px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition"
-        >
-          Create & Add
-        </button>
-      </div>
-
-      {/* Close Button */}
-      <button
-        onClick={() => setOpen(false)}
-        className="mt-5 w-full px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
+              {/* Create New List */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="New list name..."
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg bg-neutral-950 border border-neutral-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-neutral-600 transition-all"
+                />
+                <button
+                  onClick={handleCreateAndAdd}
+                  disabled={!newListName.trim()}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Create
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
