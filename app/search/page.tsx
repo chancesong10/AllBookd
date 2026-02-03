@@ -8,9 +8,10 @@ import { BookItem } from '@/types/books'
 import Link from 'next/link'
 import AddToListButton from '@/app/components/addtolistbutton'
 
-// 1. Create a reusable "Skeleton" component for the loading state
+// --- Components ---
+
 const BookSkeleton = () => (
-  <div className="bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 animate-pulse">
+  <div className="bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 animate-pulse h-full">
     <div className="aspect-[2/3] bg-neutral-800" />
     <div className="p-4 space-y-3">
       <div className="h-4 bg-neutral-800 rounded w-3/4" />
@@ -53,7 +54,7 @@ function SearchPage() {
     return () => subscription?.unsubscribe()
   }, [])
 
-  // Fetch search results
+  // Fetch search results (with filtering)
   useEffect(() => {
     if (!query.trim()) {
       setResults([])
@@ -82,7 +83,14 @@ function SearchPage() {
         }
 
         const data = await response.json()
-        setResults(data.items || [])
+        const items = data.items || []
+
+        // FILTER: Only keep books that explicitly have imageLinks
+        // This prevents "No Cover" boxes from ruining the grid
+        //const validItems = items.filter((book: BookItem) => book.volumeInfo.imageLinks)
+        const validItems = items.filter((book: BookItem) => book.volumeInfo?.imageLinks)
+
+        setResults(validItems)
         setTotalItems(data.totalItems || 0)
       } catch (err: any) {
         if (err.name === 'AbortError') return
@@ -99,7 +107,7 @@ function SearchPage() {
     return () => abortController.abort()
   }, [query, page])
 
-  // UI
+  // --- UI ---
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 pt-24 px-4 sm:px-6 lg:px-8 pb-12">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -112,6 +120,7 @@ function SearchPage() {
           </div>
         ) : (
           <>
+            {/* Results Title Bar */}
             <div className="flex items-end justify-between border-b border-neutral-800 pb-4">
               <h1 className="text-2xl font-bold tracking-tight">
                 {isLoading ? (
@@ -122,11 +131,12 @@ function SearchPage() {
               </h1>
               {!isLoading && (
                 <span className="text-sm text-neutral-500 hidden sm:block">
-                  {totalItems.toLocaleString()} books found
+                  {totalItems.toLocaleString()} matches
                 </span>
               )}
             </div>
 
+            {/* Error Message */}
             {error && (
               <div className="bg-red-900/20 border border-red-900/50 p-4 rounded-lg flex items-center gap-3">
                 <span className="text-xl">⚠️</span>
@@ -137,16 +147,18 @@ function SearchPage() {
             {/* Results Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {isLoading ? (
-                // Show 12 skeleton items while loading
+                // Skeletons
                 Array.from({ length: 12 }).map((_, i) => <BookSkeleton key={i} />)
               ) : results.length === 0 ? (
+                // No Results
                 <div className="col-span-full py-20 text-center">
                   <p className="text-neutral-400 text-lg">No books found matching your criteria.</p>
                 </div>
               ) : (
+                // Book Cards
                 results.map((book) => {
                   const info = book.volumeInfo
-                  // High res image logic
+                  // Try high-res cover first, fallback to standard thumbnail
                   const thumbnail = `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w400-h600&source=gbs_api` || info.imageLinks?.thumbnail?.replace(/^http:\/\//, 'https://')
 
                   return (
@@ -154,25 +166,19 @@ function SearchPage() {
                       key={book.id}
                       className="group flex flex-col h-full bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-neutral-600 transition-all duration-300 hover:shadow-2xl hover:shadow-black/50"
                     >
-                      {/* Image Container with fixed Aspect Ratio */}
+                      {/* Image Container (Fixed Aspect Ratio) */}
                       <div className="relative aspect-[2/3] overflow-hidden bg-neutral-800">
-                        {thumbnail ? (
-                          <Link href={`/book/${book.id}`} className="block w-full h-full">
-                            <img
-                              src={thumbnail}
-                              alt={info.title}
-                              loading="lazy"
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                          </Link>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-neutral-600">
-                            <span className="text-xs uppercase tracking-wider font-semibold">No Cover</span>
-                          </div>
-                        )}
+                        <Link href={`/book/${book.id}`} className="block w-full h-full">
+                          <img
+                            src={thumbnail}
+                            alt={info.title}
+                            loading="lazy"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </Link>
                       </div>
 
-                      {/* Content */}
+                      {/* Content Container */}
                       <div className="p-4 flex-1 flex flex-col">
                         <Link href={`/book/${book.id}`} className="block flex-1">
                           <h2 className="text-sm font-bold text-neutral-100 line-clamp-2 leading-tight group-hover:text-blue-400 transition-colors">
