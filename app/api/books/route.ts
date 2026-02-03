@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   const key = process.env.GOOGLE_BOOKS_API_KEY;
   if (!key) {
@@ -11,35 +14,57 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q') || '';
-  // parse paging params (defaults: first 40 results)
+  
+  if (!query.trim()) {
+    return NextResponse.json(
+      { error: 'Query parameter is required' },
+      { status: 400 }
+    );
+  }
+
   const maxResults = Math.min(
     40,
     parseInt(searchParams.get('maxResults') || '40', 10)
   );
   const startIndex = parseInt(searchParams.get('startIndex') || '0', 10);
 
-  // build the Google Books URL
   const url = new URL('https://www.googleapis.com/books/v1/volumes');
   url.searchParams.set('q', query);
   url.searchParams.set('key', key);
   url.searchParams.set('maxResults', String(maxResults));
   url.searchParams.set('startIndex', String(startIndex));
 
-  const res = await fetch(url);
-  if (!res.ok) {
+  try {
+    const res = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Google Books API error:', res.status, errorText);
+      return NextResponse.json(
+        { error: `Google API error: ${res.statusText}` },
+        { status: res.status }
+      );
+    }
+
+    const data = await res.json();
+
+    return NextResponse.json({
+      query,
+      startIndex,
+      maxResults,
+      totalItems: data.totalItems || 0,
+      items: data.items || [],
+    });
+  } catch (error: any) {
+    console.error('Error fetching from Google Books:', error);
     return NextResponse.json(
-      { error: `Google API error: ${res.statusText}` },
-      { status: res.status }
+      { error: 'Failed to fetch books', details: error.message },
+      { status: 500 }
     );
   }
-
-  const data = await res.json();
-  // return the full payload plus our paging info
-  return NextResponse.json({
-    query,
-    startIndex,
-    maxResults,
-    totalItems: data.totalItems,
-    items: data.items ?? [],
-  });
 }

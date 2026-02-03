@@ -44,17 +44,26 @@ function SearchPage() {
   useEffect(() => {
     if (!query.trim()) {
       setResults([])
+      setTotalItems(0)
+      setError('')
       return
     }
+
+    // Use AbortController to cancel previous requests
+    const abortController = new AbortController()
 
     const fetchBooks = async () => {
       setIsLoading(true)
       setError('')
+      
       try {
         const startIndex = page * resultsPerPage
+        const url = `/api/books?q=${encodeURIComponent(query)}&startIndex=${startIndex}&maxResults=${resultsPerPage}`
 
-        // Add pagination to API call
-        const response = await fetch(`/api/books?q=${encodeURIComponent(query)}&startIndex=${startIndex}&maxResults=${resultsPerPage}`)
+        const response = await fetch(url, {
+          signal: abortController.signal
+        })
+
         if (!response.ok) {
           const errorData = await response.json()
           throw new Error(errorData.error || 'Failed to fetch books')
@@ -64,15 +73,24 @@ function SearchPage() {
         setResults(data.items || [])
         setTotalItems(data.totalItems || 0)
       } catch (err: any) {
+        if (err.name === 'AbortError') {
+          return // Request was cancelled, ignore
+        }
         console.error('Search error:', err)
         setError(err.message)
         setResults([])
+        setTotalItems(0)
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchBooks()
+
+    // Cleanup: abort the request if component unmounts or dependencies change
+    return () => {
+      abortController.abort()
+    }
   }, [query, page])
 
   // Add to wishlist
