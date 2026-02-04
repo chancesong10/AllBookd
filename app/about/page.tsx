@@ -13,10 +13,7 @@ export default function AboutPage() {
           {/* 2. Hero Section */}
           <div className="mb-20">
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
-              Finally, a book tracker <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-white animate-gradient-x">
-                that looks as good as it feels.
-              </span>
+              Finally, a book tracker <br /> that looks as good as it feels.
             </h1>
             
             <p className="text-xl md:text-2xl text-neutral-400 leading-relaxed max-w-2xl">
