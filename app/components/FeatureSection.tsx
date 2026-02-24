@@ -12,48 +12,28 @@ interface BookCover {
   title: string;
   author: string;
   thumbnail: string;
-  id?: string; // Add id for better cover URLs
+  id?: string;
 }
 
-// Each section gets its own search query to surface contextually relevant covers
 const SECTION_QUERIES = [
-  "bestseller fiction 2026",       // "Share Your Taste"
-  "must read classics literature",  // "Keep Track"
-  "popular nonfiction 2026",        // "Monitor Your Journey"
+  "bestseller fiction 2026",
+  "must read classics literature",
+  "popular nonfiction 2026",
 ];
 
 async function fetchCovers(query: string, count: number): Promise<BookCover[]> {
   try {
-    // Use your existing API route instead of calling Google directly
     const res = await fetch(`/api/books?q=${encodeURIComponent(query)}&maxResults=${count}`);
-    
-    if (!res.ok) {
-      console.error("API responded with status:", res.status);
-      return [];
-    }
-    
+    if (!res.ok) return [];
     const data = await res.json();
     
-    // The API returns data in this structure: { items: [...], totalItems, etc. }
     return (data.items ?? [])
       .map((item: any) => {
         const volumeInfo = item.volumeInfo || {};
-        const links = volumeInfo.imageLinks;
-        
-        // Try to get a high-quality cover using the book ID (like your search page does)
         let thumbnail = null;
         
-        // First try the high-quality cover format from your search page
         if (item.id) {
           thumbnail = `https://books.google.com/books/publisher/content/images/frontcover/${item.id}?fife=w400-h600&source=gbs_api`;
-        }
-        
-        // Fallback to the regular thumbnail if the high-quality one fails
-        if (!thumbnail && links) {
-          thumbnail = links.thumbnail || links.smallThumbnail || null;
-          if (thumbnail) {
-            thumbnail = thumbnail.replace("http://", "https://");
-          }
         }
         
         return {
@@ -63,80 +43,117 @@ async function fetchCovers(query: string, count: number): Promise<BookCover[]> {
           thumbnail,
         };
       })
-      .filter((b: BookCover) => b.thumbnail); // Only keep books with covers
+      .filter((b: BookCover) => b.thumbnail);
   } catch (error) {
     console.error("Error fetching books:", error);
     return [];
   }
 }
 
-// ─── VARIANT: GRID (3-col) ────────────────────────────────────────────────────
+// ─── VARIANT: GRID (3-col) with POPOUT EFFECT ────────────────────────────────
 function GridCovers({ books }: { books: BookCover[] }) {
   return (
-    <div className="grid grid-cols-3 gap-2.5 w-full">
+    <div className="grid grid-cols-3 gap-4 w-full relative -m-2 p-2">
       {books.slice(0, 6).map((book, i) => (
         <motion.div
           key={book.id || i}
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: i * 0.07, duration: 0.45 }}
-          className="group relative aspect-[2/3] overflow-hidden rounded-md shadow-lg"
+          transition={{ delay: i * 0.08, duration: 0.5, type: "spring", stiffness: 100 }}
+          whileHover={{ 
+            scale: 1.25, 
+            zIndex: 50, 
+            rotate: [0, -2, 2, -1, 0],
+            transition: { duration: 0.3 }
+          }}
+          className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-xl hover:shadow-2xl cursor-pointer"
+          style={{
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3)"
+          }}
         >
           <img
             src={book.thumbnail}
             alt={book.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            onError={(e) => {
-              // If the high-quality image fails, try the fallback or hide
-              const target = e.target as HTMLImageElement;
-              // You could set a fallback image here if needed
-              target.style.display = 'none';
-            }}
+            className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-110"
           />
-          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2">
-            <p className="text-white text-[9px] font-medium leading-tight line-clamp-2">{book.title}</p>
-            <p className="text-zinc-400 text-[8px] mt-0.5 truncate">{book.author}</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-3"
+          >
+            <p className="text-white text-[10px] font-bold leading-tight line-clamp-2 drop-shadow-lg">{book.title}</p>
+            <p className="text-zinc-300 text-[8px] mt-1 truncate font-medium">{book.author}</p>
+          </motion.div>
+          
+          {/* Decorative corner accent */}
+          <div className="absolute top-0 right-0 w-6 h-6 bg-gradient-to-bl from-white/20 to-transparent" />
         </motion.div>
       ))}
     </div>
   );
 }
 
-// ─── VARIANT: STACK (fanned) ──────────────────────────────────────────────────
+// ─── VARIANT: STACK (fanned) with DRAMATIC OVERLAP ───────────────────────────
 const STACK_STYLES = [
-  { rotate: -9, x: -36, y: 8,  zIndex: 1 },
-  { rotate: -3, x: -12, y: 2,  zIndex: 2 },
-  { rotate:  2, x:  12, y: 0,  zIndex: 3 },
-  { rotate:  8, x:  36, y: 6,  zIndex: 4 },
+  { rotate: -12, x: -45, y: 15, zIndex: 1 },
+  { rotate: -6, x: -25, y: 8, zIndex: 2 },
+  { rotate: 0, x: 0, y: 0, zIndex: 3 },
+  { rotate: 6, x: 25, y: 5, zIndex: 4 },
+  { rotate: 12, x: 45, y: 12, zIndex: 5 },
 ];
 
 function StackCovers({ books }: { books: BookCover[] }) {
   return (
-    <div className="relative flex items-center justify-center w-full h-52">
-      {books.slice(0, 4).map((book, i) => {
+    <div className="relative flex items-center justify-center w-full h-64 -my-4">
+      {books.slice(0, 5).map((book, i) => {
         const s = STACK_STYLES[i];
         return (
           <motion.div
             key={book.id || i}
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.6, rotate: s.rotate - 10 }}
+            whileInView={{ opacity: 1, scale: 1, rotate: s.rotate }}
             viewport={{ once: true }}
-            transition={{ delay: i * 0.1, duration: 0.5, type: "spring", stiffness: 130 }}
-            whileHover={{ scale: 1.1, zIndex: 30, rotate: 0 }}
-            style={{ rotate: s.rotate, x: s.x, y: s.y, zIndex: s.zIndex, position: "absolute" }}
-            className="w-24 h-36 rounded-md shadow-2xl overflow-hidden cursor-pointer"
+            transition={{ 
+              delay: i * 0.12, 
+              duration: 0.6, 
+              type: "spring", 
+              stiffness: 80,
+              damping: 12
+            }}
+            whileHover={{ 
+              scale: 1.3, 
+              zIndex: 50, 
+              rotate: 0,
+              y: -20,
+              transition: { duration: 0.3, type: "spring", stiffness: 300 }
+            }}
+            style={{ 
+              rotate: s.rotate, 
+              x: s.x, 
+              y: s.y, 
+              zIndex: s.zIndex, 
+              position: "absolute",
+              filter: "drop-shadow(0 20px 15px rgba(0, 0, 0, 0.5))"
+            }}
+            className="w-28 h-40 rounded-lg overflow-hidden cursor-pointer border-2 border-white/10"
           >
             <img 
               src={book.thumbnail} 
               alt={book.title} 
               className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
             />
+            
+            {/* Hover info - appears on the book itself */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-2 flex flex-col justify-end"
+            >
+              <p className="text-white text-[8px] font-bold line-clamp-1">{book.title}</p>
+              <p className="text-zinc-300 text-[6px] truncate">{book.author}</p>
+            </motion.div>
           </motion.div>
         );
       })}
@@ -144,41 +161,65 @@ function StackCovers({ books }: { books: BookCover[] }) {
   );
 }
 
-// ─── VARIANT: SCATTERED ───────────────────────────────────────────────────────
+// ─── VARIANT: SCATTERED with FLOATING EFFECT ─────────────────────────────────
 const SCATTER_STYLES = [
-  { rotate: -5,  top: "4%",  left: "2%"  },
-  { rotate:  3,  top: "2%",  left: "34%" },
-  { rotate: -2,  top: "6%",  left: "65%" },
-  { rotate:  5,  top: "48%", left: "8%"  },
-  { rotate: -4,  top: "50%", left: "46%" },
-  { rotate:  2,  top: "44%", left: "74%" },
+  { rotate: -8,  top: "0%",  left: "-5%",  delay: 0.1 },
+  { rotate: 5,   top: "-5%", left: "25%",  delay: 0.3 },
+  { rotate: -3,  top: "5%",  left: "55%",  delay: 0.5 },
+  { rotate: 10,  top: "45%", left: "-2%",  delay: 0.2 },
+  { rotate: -6,  top: "55%", left: "35%",  delay: 0.4 },
+  { rotate: 4,   top: "40%", left: "70%",  delay: 0.6 },
+  { rotate: -12, top: "75%", left: "15%",  delay: 0.7 },
 ];
 
 function ScatteredCovers({ books }: { books: BookCover[] }) {
   return (
-    <div className="relative w-full h-60">
-      {books.slice(0, 6).map((book, i) => {
-        const s = SCATTER_STYLES[i];
+    <div className="relative w-full h-72 -my-8 -mx-4">
+      {books.slice(0, 7).map((book, i) => {
+        const s = SCATTER_STYLES[i % SCATTER_STYLES.length];
         return (
           <motion.div
             key={book.id || i}
-            initial={{ opacity: 0, scale: 0.75 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.5, y: 30 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: i * 0.09, duration: 0.45 }}
-            whileHover={{ scale: 1.12, rotate: 0, zIndex: 30 }}
-            style={{ rotate: s.rotate, top: s.top, left: s.left, position: "absolute", zIndex: i }}
-            className="w-[22%] aspect-[2/3] rounded-md shadow-xl overflow-hidden cursor-pointer"
+            transition={{ 
+              delay: s.delay, 
+              duration: 0.6,
+              type: "spring",
+              stiffness: 70
+            }}
+            whileHover={{ 
+              scale: 1.4, 
+              rotate: 0, 
+              zIndex: 50,
+              y: -15,
+              transition: { duration: 0.3, type: "spring", stiffness: 400 }
+            }}
+            style={{ 
+              rotate: s.rotate, 
+              top: s.top, 
+              left: s.left, 
+              position: "absolute", 
+              zIndex: i,
+              filter: "drop-shadow(0 15px 10px rgba(0, 0, 0, 0.4))"
+            }}
+            className="w-[24%] aspect-[2/3] rounded-lg overflow-hidden cursor-pointer border border-white/20"
           >
             <img 
               src={book.thumbnail} 
               alt={book.title} 
               className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
             />
+            
+            {/* Minimal hover effect */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              className="absolute inset-0 bg-black/50 flex items-end p-2"
+            >
+              <p className="text-white text-[7px] font-bold line-clamp-1">{book.title}</p>
+            </motion.div>
           </motion.div>
         );
       })}
@@ -201,7 +242,7 @@ export const FeatureSection = ({ title, description, index }: FeatureSectionProp
   useEffect(() => {
     let isMounted = true;
     
-    fetchCovers(query, 8).then((results) => {
+    fetchCovers(query, 12).then((results) => {
       if (isMounted) {
         setBooks(results);
         setLoading(false);
@@ -215,29 +256,59 @@ export const FeatureSection = ({ title, description, index }: FeatureSectionProp
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="py-24 flex items-center justify-center text-white px-8"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.8 }}
+      className="py-32 flex items-center justify-center text-white px-8 relative overflow-visible"
     >
+      {/* Background glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent pointer-events-none" />
+      
       <div
-        className={`max-w-4xl w-full flex flex-col ${
+        className={`max-w-6xl w-full flex flex-col ${
           isEven ? "md:flex-row" : "md:flex-row-reverse"
-        } items-center gap-10`}
+        } items-center gap-12 relative`}
       >
-        {/* Text card */}
-        <div className="flex-1 space-y-3 p-8 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
-          <h3 className="text-2xl font-semibold tracking-tight text-white">{title}</h3>
-          <p className="text-sm text-zinc-300 leading-relaxed">{description}</p>
-        </div>
+        {/* Text card - now with glass morphism and floating effect */}
+        <motion.div 
+          initial={{ x: isEven ? -50 : 50, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="flex-1 space-y-4 p-10 rounded-3xl bg-black/30 backdrop-blur-xl border border-white/20 shadow-2xl relative overflow-hidden group"
+        >
+          {/* Animated gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          
+          <h3 className="text-3xl font-bold tracking-tight text-white relative">
+            {title}
+          </h3>
+          <p className="text-base text-zinc-200 leading-relaxed relative">
+            {description}
+          </p>
+          
+          {/* Decorative elements */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
+        </motion.div>
 
-        {/* Book covers panel */}
-        <div className="flex-1 w-full max-w-sm min-h-[200px] bg-zinc-800/40 backdrop-blur-sm rounded-xl border border-white/5 p-4 flex items-center justify-center">
+        {/* Book covers panel - now with NO background and books popping out */}
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="flex-1 w-full max-w-md min-h-[280px] relative overflow-visible"
+        >
           {loading ? (
-            <div className="w-6 h-6 border border-white/20 border-t-white/70 rounded-full animate-spin" />
+            <div className="flex items-center justify-center h-64">
+              <div className="w-10 h-10 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
+            </div>
           ) : books.length === 0 ? (
-            <span className="text-zinc-500 text-[10px] uppercase tracking-widest">No covers found</span>
+            <div className="flex items-center justify-center h-64">
+              <span className="text-zinc-500 text-xs uppercase tracking-widest">No covers found</span>
+            </div>
           ) : variant === "grid" ? (
             <GridCovers books={books} />
           ) : variant === "stack" ? (
@@ -245,7 +316,7 @@ export const FeatureSection = ({ title, description, index }: FeatureSectionProp
           ) : (
             <ScatteredCovers books={books} />
           )}
-        </div>
+        </motion.div>
       </div>
     </motion.section>
   );
