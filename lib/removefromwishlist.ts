@@ -1,3 +1,4 @@
+//app/lib/removefromwishlist.ts
 import { supabase } from '@/lib/supabase/client'
 //remove from whislist
 /**

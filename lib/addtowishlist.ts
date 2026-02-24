@@ -1,3 +1,4 @@
+//app/lib/addtowishlist.ts
 import { supabase } from '@/lib/supabase/client'
 
 export const addToWishlist = async (book: any, user: any) => {

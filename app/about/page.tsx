@@ -1,3 +1,5 @@
+// app/about/page.tsx
+
 /**
  * Renders the static "About" marketing page.
  * * Layout structure:

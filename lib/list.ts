@@ -1,3 +1,4 @@
+//app/lib/list.ts
 import { supabase } from '@/lib/supabase/client'
 
 // Create a new list

@@ -1,3 +1,4 @@
+//app/genres/BookRow.tsx
 'use client'
 
 import React, { useRef, useState, useEffect } from 'react'

@@ -1,3 +1,4 @@
+//app/genres/page.tsx
 'use client'
 
 import { BookItem } from '@/types/books';

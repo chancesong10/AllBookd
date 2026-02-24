@@ -1,3 +1,4 @@
+//app/types/books.ts
 export interface VolumeInfo {
     title: string
     authors?: string[]
