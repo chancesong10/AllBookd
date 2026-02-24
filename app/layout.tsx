@@ -28,11 +28,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-          <Navbar />
-          <main>{children}</main>
-          <Analytics/>
-          <SpeedInsights/>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Navbar />
+        <main>{children}</main>
+        <Analytics/>
+        <SpeedInsights/>
       </body>
     </html>
   )

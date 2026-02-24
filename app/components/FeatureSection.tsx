@@ -1,4 +1,3 @@
-//app/components/FeatureSection.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -51,128 +50,84 @@ async function fetchCovers(query: string, count: number): Promise<BookCover[]> {
   }
 }
 
-// ─── VARIANT: GRID with BIGGER BOOKS & SHINY LINES ───────────────────────────
+// ─── VARIANT: GRID (3-col) with POPOUT EFFECT ────────────────────────────────
 function GridCovers({ books }: { books: BookCover[] }) {
   return (
-    <div className="grid grid-cols-3 gap-5 w-full relative -m-5 p-5">
+    <div className="grid grid-cols-3 gap-3 w-full relative -m-3 p-3">
       {books.slice(0, 6).map((book, i) => (
         <motion.div
           key={book.id || i}
-          initial={{ opacity: 0, y: 30, scale: 0.9 }}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
           transition={{ delay: i * 0.08, duration: 0.5, type: "spring", stiffness: 100 }}
           whileHover={{ 
-            scale: 1.5, 
-            zIndex: 50,
-            // FIXED: Changed from multiple keyframes to a simple rotation
-            rotate: [0, 5, -5, 0],
-            transition: { 
-              duration: 0.5,
-              // FIXED: Removed "spring" from the rotation animation
-              rotate: { type: "tween", ease: "easeInOut" }
-            }
+            scale: 1.35, 
+            zIndex: 50, 
+            rotate: [0, -2, 2, -1, 0],
+            transition: { duration: 0.3 }
           }}
-          className="group relative aspect-[2/3] overflow-visible cursor-pointer"
+          className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-xl hover:shadow-2xl cursor-pointer"
+          style={{
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3)"
+          }}
         >
-          {/* Shiny rotating border lines */}
-          <motion.div
-            className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100"
-            animate={{
-              boxShadow: [
-                "0 0 0 2px rgba(255,255,255,0.5), 0 0 15px 5px rgba(255,255,255,0.3)",
-                "0 0 0 4px rgba(255,255,255,0.8), 0 0 25px 10px rgba(255,255,255,0.5)",
-                "0 0 0 2px rgba(255,255,255,0.5), 0 0 15px 5px rgba(255,255,255,0.3)",
-              ]
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+          <img
+            src={book.thumbnail}
+            alt={book.title}
+            className="w-full h-full object-cover transition-all duration-300 group-hover:brightness-110"
           />
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-2"
+          >
+            <p className="text-white text-[9px] font-bold leading-tight line-clamp-2 drop-shadow-lg">{book.title}</p>
+            <p className="text-zinc-300 text-[8px] mt-1 truncate font-medium">{book.author}</p>
+          </motion.div>
           
-          {/* Decorative corner lines */}
-          <svg className="absolute -inset-4 w-[calc(100%+32px)] h-[calc(100%+32px)] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <motion.rect
-              x="0"
-              y="0"
-              width="100%"
-              height="100%"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="1.5"
-              strokeDasharray="5 5"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
-            />
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="white" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="cyan" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="white" stopOpacity="0.8" />
-              </linearGradient>
-            </defs>
-          </svg>
-          
-          {/* Main book image - BIGGER */}
-          <div className="relative w-full h-full rounded-lg overflow-hidden shadow-2xl">
-            <img
-              src={book.thumbnail}
-              alt={book.title}
-              className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
-            />
-            
-            {/* Hover overlay */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex flex-col justify-end p-3"
-            >
-              <p className="text-white text-[10px] font-bold leading-tight line-clamp-2">{book.title}</p>
-              <p className="text-zinc-300 text-[8px] mt-1 truncate">{book.author}</p>
-            </motion.div>
-          </div>
+          {/* Decorative corner accent */}
+          <div className="absolute top-0 right-0 w-5 h-5 bg-gradient-to-bl from-white/20 to-transparent" />
         </motion.div>
       ))}
     </div>
   );
 }
 
-// ─── VARIANT: STACK with BIGGER BOOKS & SHINY LINES ──────────────────────────
+// ─── VARIANT: STACK (fanned) with DRAMATIC OVERLAP ───────────────────────────
 const STACK_STYLES = [
-  { rotate: -14, x: -60, y: 25, zIndex: 1 },
-  { rotate: -7, x: -35, y: 12, zIndex: 2 },
+  { rotate: -12, x: -45, y: 15, zIndex: 1 },
+  { rotate: -6, x: -25, y: 8, zIndex: 2 },
   { rotate: 0, x: 0, y: 0, zIndex: 3 },
-  { rotate: 7, x: 35, y: 10, zIndex: 4 },
-  { rotate: 14, x: 60, y: 20, zIndex: 5 },
+  { rotate: 6, x: 25, y: 5, zIndex: 4 },
+  { rotate: 12, x: 45, y: 12, zIndex: 5 },
 ];
 
 function StackCovers({ books }: { books: BookCover[] }) {
   return (
-    <div className="relative flex items-center justify-center w-full h-80 -my-6">
+    <div className="relative flex items-center justify-center w-full h-56 -my-2">
       {books.slice(0, 5).map((book, i) => {
         const s = STACK_STYLES[i];
         return (
           <motion.div
             key={book.id || i}
-            initial={{ opacity: 0, scale: 0.5, rotate: s.rotate - 15 }}
+            initial={{ opacity: 0, scale: 0.6, rotate: s.rotate - 10 }}
             whileInView={{ opacity: 1, scale: 1, rotate: s.rotate }}
             viewport={{ once: true }}
             transition={{ 
-              delay: i * 0.15, 
-              duration: 0.7, 
+              delay: i * 0.12, 
+              duration: 0.6, 
               type: "spring", 
-              stiffness: 70
+              stiffness: 80,
+              damping: 12
             }}
             whileHover={{ 
-              scale: 1.6, 
+              scale: 1.4, 
               zIndex: 50, 
               rotate: 0,
-              y: -35,
-              transition: { duration: 0.4, type: "spring", stiffness: 300 }
+              y: -20,
+              transition: { duration: 0.3, type: "spring", stiffness: 300 }
             }}
             style={{ 
               rotate: s.rotate, 
@@ -180,42 +135,24 @@ function StackCovers({ books }: { books: BookCover[] }) {
               y: s.y, 
               zIndex: s.zIndex, 
               position: "absolute",
+              filter: "drop-shadow(0 20px 15px rgba(0, 0, 0, 0.5))"
             }}
-            className="group"
+            className="w-24 h-36 rounded-lg overflow-hidden cursor-pointer border-2 border-white/10"
           >
-            {/* Shiny border that pulses */}
-            <motion.div
-              className="absolute -inset-3 rounded-lg opacity-0 group-hover:opacity-100"
-              animate={{
-                boxShadow: [
-                  "0 0 0 2px rgba(255,215,0,0.6), 0 0 20px 5px rgba(255,215,0,0.3)",
-                  "0 0 0 4px rgba(255,215,0,0.9), 0 0 30px 10px rgba(255,215,0,0.5)",
-                  "0 0 0 2px rgba(255,215,0,0.6), 0 0 20px 5px rgba(255,215,0,0.3)",
-                ]
-              }}
-              transition={{
-                duration: 1.2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+            <img 
+              src={book.thumbnail} 
+              alt={book.title} 
+              className="w-full h-full object-cover"
             />
             
-            {/* Book image - BIGGER */}
-            <div className="relative w-32 h-48 rounded-lg overflow-hidden shadow-2xl border border-white/10">
-              <img 
-                src={book.thumbnail} 
-                alt={book.title} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            </div>
-            
-            {/* Hover tooltip */}
+            {/* Hover info - appears on the book itself */}
             <motion.div 
-              initial={{ opacity: 0, y: 5 }}
-              whileHover={{ opacity: 1, y: 0 }}
-              className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-[8px] font-bold border border-white/20"
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-2 flex flex-col justify-end"
             >
-              {book.title}
+              <p className="text-white text-[8px] font-bold line-clamp-1">{book.title}</p>
+              <p className="text-zinc-300 text-[6px] truncate">{book.author}</p>
             </motion.div>
           </motion.div>
         );
@@ -224,41 +161,40 @@ function StackCovers({ books }: { books: BookCover[] }) {
   );
 }
 
-// ─── VARIANT: SCATTERED with BIGGER BOOKS & SHINY LINES ──────────────────────
+// ─── VARIANT: SCATTERED with FLOATING EFFECT ─────────────────────────────────
 const SCATTER_STYLES = [
-  { rotate: -12,  top: "-8%",  left: "-10%",  delay: 0.1 },
-  { rotate: 10,   top: "-10%", left: "30%",   delay: 0.3 },
-  { rotate: -7,   top: "0%",   left: "60%",   delay: 0.5 },
-  { rotate: 15,   top: "40%",  left: "-8%",   delay: 0.2 },
-  { rotate: -10,  top: "50%",  left: "38%",   delay: 0.4 },
-  { rotate: 8,    top: "35%",  left: "75%",   delay: 0.6 },
-  { rotate: -18,  top: "78%",  left: "8%",    delay: 0.7 },
-  { rotate: 12,   top: "85%",  left: "58%",   delay: 0.8 },
+  { rotate: -8,  top: "0%",  left: "-5%",  delay: 0.1 },
+  { rotate: 5,   top: "-5%", left: "25%",  delay: 0.3 },
+  { rotate: -3,  top: "5%",  left: "55%",  delay: 0.5 },
+  { rotate: 10,  top: "45%", left: "-2%",  delay: 0.2 },
+  { rotate: -6,  top: "55%", left: "35%",  delay: 0.4 },
+  { rotate: 4,   top: "40%", left: "70%",  delay: 0.6 },
+  { rotate: -12, top: "70%", left: "15%",  delay: 0.7 },
 ];
 
 function ScatteredCovers({ books }: { books: BookCover[] }) {
   return (
-    <div className="relative w-full h-96 -my-8 -mx-8">
-      {books.slice(0, 8).map((book, i) => {
+    <div className="relative w-full h-64 -my-4 -mx-2">
+      {books.slice(0, 7).map((book, i) => {
         const s = SCATTER_STYLES[i % SCATTER_STYLES.length];
         return (
           <motion.div
             key={book.id || i}
-            initial={{ opacity: 0, scale: 0.3, y: 60 }}
+            initial={{ opacity: 0, scale: 0.5, y: 30 }}
             whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ 
               delay: s.delay, 
-              duration: 0.8,
+              duration: 0.6,
               type: "spring",
-              stiffness: 50
+              stiffness: 70
             }}
             whileHover={{ 
-              scale: 1.7, 
+              scale: 1.5, 
               rotate: 0, 
               zIndex: 50,
-              y: -30,
-              transition: { duration: 0.4, type: "spring", stiffness: 400 }
+              y: -15,
+              transition: { duration: 0.3, type: "spring", stiffness: 400 }
             }}
             style={{ 
               rotate: s.rotate, 
@@ -266,34 +202,24 @@ function ScatteredCovers({ books }: { books: BookCover[] }) {
               left: s.left, 
               position: "absolute", 
               zIndex: i,
+              filter: "drop-shadow(0 15px 10px rgba(0, 0, 0, 0.4))"
             }}
-            className="group"
+            className="w-[22%] aspect-[2/3] rounded-lg overflow-hidden cursor-pointer border border-white/20"
           >
-            {/* Shiny border with glow */}
-            <motion.div
-              className="absolute -inset-4 rounded-full opacity-0 group-hover:opacity-100"
-              animate={{
-                boxShadow: [
-                  "0 0 0 2px rgba(255,255,255,0.5), 0 0 30px 10px rgba(255,255,255,0.3)",
-                  "0 0 0 4px rgba(255,255,255,0.9), 0 0 50px 20px rgba(255,255,255,0.5)",
-                  "0 0 0 2px rgba(255,255,255,0.5), 0 0 30px 10px rgba(255,255,255,0.3)",
-                ]
-              }}
-              transition={{
-                duration: 1.8,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+            <img 
+              src={book.thumbnail} 
+              alt={book.title} 
+              className="w-full h-full object-cover"
             />
             
-            {/* Book image - BIGGER */}
-            <div className="relative w-32 h-48 rounded-lg overflow-hidden shadow-2xl border border-white/10">
-              <img 
-                src={book.thumbnail} 
-                alt={book.title} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            </div>
+            {/* Minimal hover effect */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              className="absolute inset-0 bg-black/50 flex items-end p-1"
+            >
+              <p className="text-white text-[7px] font-bold line-clamp-1">{book.title}</p>
+            </motion.div>
           </motion.div>
         );
       })}
@@ -304,7 +230,7 @@ function ScatteredCovers({ books }: { books: BookCover[] }) {
 type CoverVariant = "grid" | "stack" | "scattered";
 const VARIANTS: CoverVariant[] = ["stack", "grid", "scattered"];
 
-// ─── MAIN COMPONENT (COMPLETELY REVERTED TEXT BOXES) ─────────────────────────
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export const FeatureSection = ({ title, description, index }: FeatureSectionProps) => {
   const isEven = index % 2 === 0;
   const [books, setBooks] = useState<BookCover[]>([]);
@@ -330,31 +256,57 @@ export const FeatureSection = ({ title, description, index }: FeatureSectionProp
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="py-24 flex items-center justify-center text-white px-8 overflow-visible"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.8 }}
+      className="py-24 flex items-center justify-center text-white px-8 relative overflow-visible"
     >
+      {/* Subtle background glow */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent pointer-events-none" />
+      
       <div
-        className={`max-w-4xl w-full flex flex-col ${
+        className={`max-w-5xl w-full flex flex-col ${
           isEven ? "md:flex-row" : "md:flex-row-reverse"
-        } items-center gap-10`}
+        } items-center gap-10 relative`}
       >
-        {/* Text card - COMPLETELY REVERTED TO ORIGINAL */}
-        <div className="flex-1 space-y-3 p-8 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
-          <h3 className="text-2xl font-semibold tracking-tight text-white">{title}</h3>
-          <p className="text-sm text-zinc-300 leading-relaxed">{description}</p>
-        </div>
+        {/* Text card - original size with slight glass morphism */}
+        <motion.div 
+          initial={{ x: isEven ? -30 : 30, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="flex-1 space-y-3 p-8 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl relative overflow-hidden group"
+        >
+          {/* Subtle animated gradient on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          
+          <h3 className="text-2xl font-semibold tracking-tight text-white relative">
+            {title}
+          </h3>
+          <p className="text-sm text-zinc-300 leading-relaxed relative">
+            {description}
+          </p>
+          
+          {/* Decorative blurs - very subtle */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
+        </motion.div>
 
-        {/* Book covers panel - BIGGER with SHINY LINES */}
-        <div className="flex-1 w-full max-w-md min-h-[300px] relative overflow-visible">
+        {/* Book covers panel - no background, books pop out */}
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="flex-1 w-full max-w-sm min-h-[240px] relative overflow-visible"
+        >
           {loading ? (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-56">
               <div className="w-8 h-8 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
             </div>
           ) : books.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-56">
               <span className="text-zinc-500 text-xs uppercase tracking-widest">No covers found</span>
             </div>
           ) : variant === "grid" ? (
@@ -364,7 +316,7 @@ export const FeatureSection = ({ title, description, index }: FeatureSectionProp
           ) : (
             <ScatteredCovers books={books} />
           )}
-        </div>
+        </motion.div>
       </div>
     </motion.section>
   );

@@ -1,10 +1,10 @@
-//app/components/Navbar.tsx
+// app/components/Navbar.tsx
 'use client'
 
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 
 export default function Navbar() {
@@ -13,6 +13,7 @@ export default function Navbar() {
   const [username, setUsername] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
 
   const Links = [
     { href: "/", text: "Home" },
@@ -34,14 +35,13 @@ export default function Navbar() {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       router.push('/')
-      router.refresh() // Refresh the page to clear any cached user data
+      router.refresh()
     } catch (error) {
       console.error('Error logging out:', error)
     }
   }
 
   useEffect(() => {
-    // Check current session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setUser(session?.user ?? null)
@@ -61,7 +61,6 @@ export default function Navbar() {
 
     getSession()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -131,7 +130,13 @@ export default function Navbar() {
           ) : user ? (
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-2">
-                {username && <span className="text-gray-300">@{username}</span>}
+                {/* Make username clickable with Link for client-side navigation */}
+                <Link 
+                  href="/profile" 
+                  className="text-gray-300 hover:text-blue-400 transition-colors font-medium"
+                >
+                  @{username || user.email?.split('@')[0] || 'user'}
+                </Link>
                 <span className="text-gray-400">|</span>
               </div>
               <button

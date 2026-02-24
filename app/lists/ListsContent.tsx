@@ -252,12 +252,12 @@ export function ListsContent() {
                     Create List
                 </button>
             </div>
-
+            
             {/* Wishlist Section */}
-            <section className="mb-12">
+            <section id="wishlist" className="mb-12">
                 <h2 className="text-xl font-semibold mb-4">Wishlist</h2>
-                {wishlist.length === 0 ? (
-                    <p className="text-gray-400">No books in wishlist yet</p>
+            {wishlist.length === 0 ? (
+                <p className="text-gray-400">No books in wishlist yet</p>
                 ) : (
                     renderBooks(wishlist)
                 )}

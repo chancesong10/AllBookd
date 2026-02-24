@@ -1,9 +1,10 @@
-// app/login/page.tsx
+// app/login/page.tsx 
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -11,6 +12,19 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectedFrom = searchParams.get('redirectedFrom') || '/'
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push(redirectedFrom)
+      }
+    }
+    checkSession()
+  }, [router, redirectedFrom])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,9 +39,13 @@ export default function LoginPage() {
 
       if (authError) throw authError
 
-      // Redirect on successful login
-      router.push('/')
-    } catch (err) {
+      if (data.session) {
+        // Successful login - redirect to the page they came from or home
+        router.push(redirectedFrom)
+        router.refresh() // Force a refresh to update navbar state
+      }
+    } catch (err: any) {
+      setError(err.message || 'Invalid login credentials')
     } finally {
       setLoading(false)
     }
@@ -81,9 +99,9 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-gray-400">
           Don't have an account?{' '}
-          <a href="/signup" className="text-blue-400 hover:text-blue-300">
+          <Link href="/signup" className="text-blue-400 hover:text-blue-300">
             Sign up
-          </a>
+          </Link>
         </div>
       </div>
     </div>
