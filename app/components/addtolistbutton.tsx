@@ -3,14 +3,8 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { User } from '@supabase/supabase-js'
-import { BookItem } from '@/types/books'
 import { addToWishlist } from '@/lib/addtowishlist'
-
-interface AddToListButtonProps {
-  book: BookItem
-  user: User | null
-}
+import { AddToListButtonProps } from '@/types/components'
 
 export default function AddToListButton({ book, user }: AddToListButtonProps) {
   const [lists, setLists] = useState<{ id: string; name: string }[]>([])

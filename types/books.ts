@@ -3,14 +3,14 @@ export interface VolumeInfo {
     title: string
     authors?: string[]
     imageLinks?: {
-      thumbnail?: string
-      small?: string
-      medium?: string
-      large?: string
-      extraLarge?: string
+        thumbnail?: string
+        small?: string
+        medium?: string
+        large?: string
+        extraLarge?: string
     }
-  }
-  
+}
+
 export interface BookItem {
     id: string
     volumeInfo: VolumeInfo
@@ -42,4 +42,11 @@ export interface UserList {
     id: string
     name: string
     created_at: string
+}
+
+export interface BookCover {
+    title: string;
+    author: string;
+    thumbnail: string;
+    id?: string;
 }

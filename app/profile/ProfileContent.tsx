@@ -2,57 +2,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-
-// Types based on your actual database schema
-interface Profile {
-  id: string
-  username: string
-  email: string
-  bio?: string
-  avatar_url?: string
-  created_at: string
-  updated_at?: string
-}
-
-interface WishlistItem {
-  id: string
-  user_id: string
-  book_id: string
-  title: string
-  authors: string | null
-  thumbnail: string | null
-  created_at: string
-}
-
-interface List {
-  id: string
-  user_id: string
-  name: string
-  created_at: string
-}
-
-interface ListItem {
-  id: string
-  list_id: string
-  user_id: string
-  book_id: string
-  title: string
-  authors: any
-  thumbnail: string | null
-  created_at: string
-  lists?: {
-    name: string
-  }
-}
-
-interface ProfileContentProps {
-  user: User
-}
+import { Profile, WishlistItem, ListItem, List,  ProfileContentProps} from '@/types/profile'
 
 export default function ProfileContent({ user }: ProfileContentProps) {
   const router = useRouter()

@@ -5,13 +5,7 @@ import { useState, useRef } from 'react'
 import AvatarEditor from 'react-avatar-editor'
 import { useDropzone } from 'react-dropzone'
 import { supabase } from '@/lib/supabase/client'
-
-interface AvatarUploadProps {
-  currentAvatar?: string
-  userId: string
-  onUploadComplete: (url: string) => void
-  onClose: () => void
-}
+import { AvatarUploadProps } from '@/types/components'
 
 export default function AvatarUpload({ currentAvatar, userId, onUploadComplete, onClose }: AvatarUploadProps) {
   const [image, setImage] = useState<File | null>(null)

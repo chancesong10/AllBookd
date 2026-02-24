@@ -1,19 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { BookCover } from "@/types/books";
+import { FeatureSectionProps } from "@/types/components";
 
-interface FeatureSectionProps {
-  title: string;
-  description: string;
-  index: number;
-}
-
-interface BookCover {
-  title: string;
-  author: string;
-  thumbnail: string;
-  id?: string;
-}
 
 const SECTION_QUERIES = [
   "bestseller fiction 2026",
