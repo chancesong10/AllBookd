@@ -243,9 +243,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             
             {/* Left side: Avatar and basic info - takes ~40% */}
             <div className="flex-1 md:flex-[2]">
-              <div className="flex items-start gap-6 h-full group">
-                {/* Avatar with upload button */}
-                <div className="relative flex-shrink-0">
+              <div className="flex items-start gap-6 h-full">
+                {/* Avatar with upload button below (only in edit mode) */}
+                <div className="relative flex-shrink-0 flex flex-col items-center">
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl overflow-hidden">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -254,12 +254,15 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                     )}
                   </div>
                   
-                  {/* Change Avatar Button - appears on hover */}
-                  {!isEditing && (
+                  {/* Change Avatar Button - only shows when in edit mode */}
+                  {isEditing && (
                     <button
                       onClick={() => setShowAvatarUpload(true)}
-                      className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-neutral-800 hover:bg-neutral-700 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity border border-neutral-700 whitespace-nowrap"
+                      className="mt-3 text-xs bg-neutral-800 hover:bg-neutral-700 text-white px-3 py-1.5 rounded-lg transition-colors border border-neutral-700 whitespace-nowrap flex items-center gap-1"
                     >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
                       Change Avatar
                     </button>
                   )}
