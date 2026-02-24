@@ -242,119 +242,127 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         
         {/* Profile Header */}
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-8 mb-8 backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row items-start gap-8">
+          <div className="flex flex-col md:flex-row items-stretch gap-8">
             
-            {/* Left side: Avatar and basic info */}
-            <div className="flex items-center gap-6 flex-1">
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                  {getInitials(profile?.username || user.email?.split('@')[0] || 'U')}
+            {/* Left side: Avatar and basic info - takes ~40% */}
+            <div className="flex-1 md:flex-[2]">
+              <div className="flex items-start gap-6 h-full">
+                {/* Avatar */}
+                <div className="relative flex-shrink-0">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
+                    {getInitials(profile?.username || user.email?.split('@')[0] || 'U')}
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-neutral-900" />
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-neutral-900" />
-              </div>
-              
-              {/* Username and Email */}
-              <div className="flex-1">
-                {isEditing ? (
-                  <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div>
-                      <label className="block text-sm text-neutral-400 mb-1">Username</label>
-                      <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="w-full md:w-96 px-4 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-neutral-400 mb-1">Bio</label>
-                      <textarea
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        rows={3}
-                        className="w-full md:w-96 px-4 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
-                        placeholder="Tell us about your reading journey..."
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50"
-                      >
-                        {saving ? 'Saving...' : 'Save Changes'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsEditing(false)
-                          setUsername(profile?.username || '')
-                          setBio(profile?.bio || '')
-                        }}
-                        className="px-4 py-2 bg-neutral-700 text-white rounded-lg hover:bg-neutral-600"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                    {message && (
-                      <p className={message.includes('success') ? 'text-green-400' : 'text-red-400'}>
-                        {message}
+                
+                {/* Username and Email */}
+                <div className="flex-1">
+                  {isEditing ? (
+                    <form onSubmit={handleUpdateProfile} className="space-y-4">
+                      <div>
+                        <label className="block text-sm text-neutral-400 mb-1">Username</label>
+                        <input
+                          type="text"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-neutral-400 mb-1">Bio</label>
+                        <textarea
+                          value={bio}
+                          onChange={(e) => setBio(e.target.value)}
+                          rows={3}
+                          className="w-full px-4 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
+                          placeholder="Tell us about your reading journey..."
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50"
+                        >
+                          {saving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditing(false)
+                            setUsername(profile?.username || '')
+                            setBio(profile?.bio || '')
+                          }}
+                          className="px-4 py-2 bg-neutral-700 text-white rounded-lg hover:bg-neutral-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      {message && (
+                        <p className={message.includes('success') ? 'text-green-400' : 'text-red-400'}>
+                          {message}
+                        </p>
+                      )}
+                    </form>
+                  ) : (
+                    <div className="h-full flex flex-col">
+                      <div className="flex items-center gap-4 mb-3">
+                        <h1 className="text-3xl font-bold">
+                          @{profile?.username || user.email?.split('@')[0] || 'user'}
+                        </h1>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="px-4 py-1.5 text-sm bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Edit Profile
+                        </button>
+                      </div>
+                      <p className="text-neutral-400 mb-2">{user.email}</p>
+                      <p className="text-sm text-neutral-500 mt-auto">
+                        Member since {profile?.created_at ? formatDate(profile.created_at) : formatDate(user.created_at)}
                       </p>
-                    )}
-                  </form>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-4 mb-2">
-                      <h1 className="text-3xl font-bold">
-                        @{profile?.username || user.email?.split('@')[0] || 'user'}
-                      </h1>
-                      <button
-                        onClick={() => setIsEditing(true)}
-                        className="px-4 py-1.5 text-sm bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors flex items-center gap-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                        Edit Profile
-                      </button>
                     </div>
-                    <p className="text-neutral-400">{user.email}</p>
-                    <p className="text-sm text-neutral-500 mt-4">
-                      Member since {profile?.created_at ? formatDate(profile.created_at) : formatDate(user.created_at)}
-                    </p>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Right side: Bio in a mini box (only show when not editing) */}
+            {/* Right side: Bio in an expanded box - takes ~60% */}
             {!isEditing && (
-              <div className="md:w-80">
+              <div className="flex-1 md:flex-[3]">
                 {profile?.bio ? (
-                  <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-5 hover:border-blue-500/30 transition-colors">
-                    <div className="flex items-center gap-2 mb-3">
-                      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="h-full bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 hover:border-blue-500/30 transition-colors flex flex-col">
+                    <div className="flex items-center gap-2 mb-4">
+                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Bio</span>
+                      <span className="text-sm font-semibold text-blue-400 uppercase tracking-wider">About Me</span>
                     </div>
-                    <p className="text-neutral-300 text-sm leading-relaxed">
+                    <p className="text-neutral-200 text-base leading-relaxed flex-1">
                       {profile.bio}
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-neutral-800/30 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors">
+                  <div className="h-full bg-neutral-800/30 border border-neutral-800 rounded-xl p-6 hover:border-neutral-700 transition-colors flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2 mb-3">
-                      <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Bio</span>
+                      <span className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">About Me</span>
                     </div>
-                    <p className="text-neutral-500 text-sm italic">
+                    <p className="text-neutral-500 text-base italic text-center">
                       No bio yet. Click edit profile to add one.
                     </p>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="mt-4 px-4 py-2 text-sm bg-neutral-700 hover:bg-neutral-600 rounded-lg transition-colors text-white"
+                    >
+                      Add Bio
+                    </button>
                   </div>
                 )}
               </div>
