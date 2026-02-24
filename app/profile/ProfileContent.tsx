@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import AvatarUpload from '@/app/components/AvatarUpload'
+import dynamic from 'next/dynamic'
 
 // Types based on your actual database schema
 interface Profile {
@@ -82,6 +82,12 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     console.log('Fetching profile for user:', user.id)
     fetchProfileData()
   }, [user])
+
+
+  const AvatarUpload = dynamic(
+    () => import('@/app/components/AvatarUpload'),
+    { ssr: false }
+  )
 
   const fetchProfileData = async () => {
     setLoading(true)
