@@ -6,6 +6,7 @@ import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import AvatarUpload from '@/app/components/AvatarUpload'
 
 // Types based on your actual database schema
 interface Profile {
@@ -23,7 +24,7 @@ interface WishlistItem {
   user_id: string
   book_id: string
   title: string
-  authors: string | null  // text field in DB
+  authors: string | null
   thumbnail: string | null
   created_at: string
 }
@@ -41,7 +42,7 @@ interface ListItem {
   user_id: string
   book_id: string
   title: string
-  authors: any // jsonb field
+  authors: any
   thumbnail: string | null
   created_at: string
   lists?: {
@@ -58,10 +59,12 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [showAvatarUpload, setShowAvatarUpload] = useState(false)
   const [stats, setStats] = useState({
     wishlistCount: 0,
     listsCount: 0,
@@ -101,6 +104,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         setProfile(profileData)
         setUsername(profileData.username || '')
         setBio(profileData.bio || '')
+        setAvatarUrl(profileData.avatar_url || '')
       } else {
         // Try to create a profile using the email
         const defaultUsername = user.email?.split('@')[0] || 'user'
@@ -178,6 +182,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
           id: user.id,
           username,
           bio,
+          avatar_url: avatarUrl,
           email: user.email,
           updated_at: new Date().toISOString()
         })
@@ -209,14 +214,6 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     return name?.charAt(0).toUpperCase() || 'U'
   }
 
-  // Helper to format authors for display
-  const formatAuthors = (authors: any) => {
-    if (!authors) return 'Unknown Author'
-    if (typeof authors === 'string') return authors
-    if (Array.isArray(authors)) return authors.join(', ')
-    return 'Unknown Author'
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-100 pt-24 pb-12">
@@ -246,13 +243,26 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             
             {/* Left side: Avatar and basic info - takes ~40% */}
             <div className="flex-1 md:flex-[2]">
-              <div className="flex items-start gap-6 h-full">
-                {/* Avatar */}
+              <div className="flex items-start gap-6 h-full group">
+                {/* Avatar with upload button */}
                 <div className="relative flex-shrink-0">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                    {getInitials(profile?.username || user.email?.split('@')[0] || 'U')}
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      getInitials(profile?.username || user.email?.split('@')[0] || 'U')
+                    )}
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-neutral-900" />
+                  
+                  {/* Change Avatar Button - appears on hover */}
+                  {!isEditing && (
+                    <button
+                      onClick={() => setShowAvatarUpload(true)}
+                      className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-neutral-800 hover:bg-neutral-700 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity border border-neutral-700 whitespace-nowrap"
+                    >
+                      Change Avatar
+                    </button>
+                  )}
                 </div>
                 
                 {/* Username and Email */}
@@ -369,6 +379,20 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             )}
           </div>
         </div>
+
+        {/* Avatar Upload Modal */}
+        {showAvatarUpload && (
+          <AvatarUpload
+            currentAvatar={avatarUrl}
+            userId={user.id}
+            onUploadComplete={(url) => {
+              setAvatarUrl(url)
+              setShowAvatarUpload(false)
+              fetchProfileData()
+            }}
+            onClose={() => setShowAvatarUpload(false)}
+          />
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
