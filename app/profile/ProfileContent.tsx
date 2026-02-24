@@ -7,26 +7,50 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-interface ProfileContentProps {
-  user: User
+// Types based on your actual database schema
+interface Profile {
+  id: string
+  username: string
+  email: string
+  bio?: string
+  avatar_url?: string
+  created_at: string
+  updated_at?: string
 }
 
-interface Profile {
-  username: string
-  avatar_url?: string
-  bio?: string
+interface WishlistItem {
+  id: string
+  user_id: string
+  book_id: string
+  title: string
+  authors: string | null  // text field in DB
+  thumbnail: string | null
   created_at: string
 }
 
-interface Stats {
-  wishlistCount: number
-  listsCount: number
-  totalBooksInLists: number
+interface List {
+  id: string
+  user_id: string
+  name: string
+  created_at: string
 }
 
-interface RecentActivity {
-  wishlist: any[]
-  listItems: any[]
+interface ListItem {
+  id: string
+  list_id: string
+  user_id: string
+  book_id: string
+  title: string
+  authors: any // jsonb field
+  thumbnail: string | null
+  created_at: string
+  lists?: {
+    name: string
+  }
+}
+
+interface ProfileContentProps {
+  user: User
 }
 
 export default function ProfileContent({ user }: ProfileContentProps) {
@@ -38,17 +62,21 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [stats, setStats] = useState<Stats>({
+  const [stats, setStats] = useState({
     wishlistCount: 0,
     listsCount: 0,
     totalBooksInLists: 0
   })
-  const [recentActivity, setRecentActivity] = useState<RecentActivity>({
+  const [recentActivity, setRecentActivity] = useState<{
+    wishlist: WishlistItem[]
+    listItems: (ListItem & { lists?: { name: string } })[]
+  }>({
     wishlist: [],
     listItems: []
   })
 
   useEffect(() => {
+    console.log('Fetching profile for user:', user.id)
     fetchProfileData()
   }, [user])
 
@@ -57,16 +85,44 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     
     try {
       // Get user profile data
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('username, avatar_url, bio, created_at')
+        .select('*')
         .eq('id', user.id)
         .single()
+      
+      console.log('Profile data from DB:', profileData)
+      
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+      }
       
       if (profileData) {
         setProfile(profileData)
         setUsername(profileData.username || '')
         setBio(profileData.bio || '')
+      } else {
+        // Try to create a profile using the email
+        const defaultUsername = user.email?.split('@')[0] || 'user'
+        
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            username: defaultUsername,
+            email: user.email,
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+        
+        if (insertError) {
+          console.error('Error creating profile:', insertError)
+        } else {
+          console.log('Created new profile:', newProfile)
+          setProfile(newProfile)
+          setUsername(newProfile.username)
+        }
       }
 
       // Get user stats
@@ -116,21 +172,25 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     setMessage('')
     
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
           username,
           bio,
+          email: user.email,
           updated_at: new Date().toISOString()
         })
+        .select()
+        .single()
       
       if (error) throw error
       
       setMessage('Profile updated successfully!')
       setIsEditing(false)
-      setProfile(prev => prev ? { ...prev, username, bio } : null)
+      setProfile(data)
     } catch (error: any) {
+      console.error('Update error:', error)
       setMessage(error.message)
     } finally {
       setSaving(false)
@@ -147,6 +207,14 @@ export default function ProfileContent({ user }: ProfileContentProps) {
 
   const getInitials = (name: string) => {
     return name?.charAt(0).toUpperCase() || 'U'
+  }
+
+  // Helper to format authors for display
+  const formatAuthors = (authors: any) => {
+    if (!authors) return 'Unknown Author'
+    if (typeof authors === 'string') return authors
+    if (Array.isArray(authors)) return authors.join(', ')
+    return 'Unknown Author'
   }
 
   if (loading) {
@@ -179,7 +247,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             {/* Avatar */}
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                {getInitials(profile?.username || user.email || 'User')}
+                {getInitials(profile?.username || user.email?.split('@')[0] || 'U')}
               </div>
               <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-neutral-900" />
             </div>
@@ -237,7 +305,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               ) : (
                 <>
                   <div className="flex items-center gap-4 mb-2">
-                    <h1 className="text-3xl font-bold">@{profile?.username || 'user'}</h1>
+                    <h1 className="text-3xl font-bold">
+                      @{profile?.username || user.email?.split('@')[0] || 'user'}
+                    </h1>
                     <button
                       onClick={() => setIsEditing(true)}
                       className="px-4 py-1.5 text-sm bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors flex items-center gap-2"
@@ -306,7 +376,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               <div key={item.id} className="flex items-center gap-4 p-3 bg-neutral-800/30 rounded-lg hover:bg-neutral-800 transition-colors">
                 <div className="w-12 h-16 bg-neutral-700 rounded overflow-hidden flex-shrink-0">
                   {item.thumbnail ? (
-                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={item.thumbnail} alt={item.title || ''} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs text-neutral-500">
                       No cover
@@ -315,7 +385,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 </div>
                 <div className="flex-1">
                   <Link href={`/book/${item.book_id}`} className="font-medium hover:text-blue-400 transition-colors">
-                    {item.title}
+                    {item.title || 'Unknown Title'}
                   </Link>
                   <p className="text-sm text-neutral-400">
                     Added to Wishlist • {formatDate(item.created_at)}
@@ -329,7 +399,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               <div key={item.id} className="flex items-center gap-4 p-3 bg-neutral-800/30 rounded-lg hover:bg-neutral-800 transition-colors">
                 <div className="w-12 h-16 bg-neutral-700 rounded overflow-hidden flex-shrink-0">
                   {item.thumbnail ? (
-                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={item.thumbnail} alt={item.title || ''} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs text-neutral-500">
                       No cover
@@ -338,7 +408,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 </div>
                 <div className="flex-1">
                   <Link href={`/book/${item.book_id}`} className="font-medium hover:text-blue-400 transition-colors">
-                    {item.title}
+                    {item.title || 'Unknown Title'}
                   </Link>
                   <p className="text-sm text-neutral-400">
                     Added to {item.lists?.name || 'a list'} • {formatDate(item.created_at)}
