@@ -1,12 +1,13 @@
-// app/login/page.tsx 
+// app/login/page.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
-export default function LoginPage() {
+// Separate component that uses useSearchParams
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -15,8 +16,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const redirectedFrom = searchParams.get('redirectedFrom') || '/'
 
-  // Check if user is already logged in
   useEffect(() => {
+    // This runs only on the client, after hydration
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
@@ -40,9 +41,8 @@ export default function LoginPage() {
       if (authError) throw authError
 
       if (data.session) {
-        // Successful login - redirect to the page they came from or home
         router.push(redirectedFrom)
-        router.refresh() // Force a refresh to update navbar state
+        router.refresh()
       }
     } catch (err: any) {
       setError(err.message || 'Invalid login credentials')
@@ -105,5 +105,27 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Main page component with Suspense
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
+        <div className="w-full max-w-md bg-gray-800 rounded-lg shadow-md p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-700 rounded mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-700 rounded"></div>
+              <div className="h-10 bg-gray-700 rounded"></div>
+              <div className="h-10 bg-gray-700 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
